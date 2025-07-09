@@ -5593,8 +5593,11 @@ void TabSLAMaterial::build_tilt_group(Slic3r::GUI::PageShp page)
     auto optgroup = page->new_optgroup(L("Profile settings"));
     optgroup->on_change = [this](const t_config_option_key& key, boost::any value)
     {
-        if (key.find("use_tilt") == 0)
-            toggle_tilt_options(key == "use_tilt#0");
+        for (const auto& s : { "use_tilt", "dynamic_delay_before", "dynamic_tilt_down", "dynamic_tilt_up"}) {
+            if (key.find(s) == 0)
+                toggle_tilt_options(key == std::string(s) + "#0");
+        }
+        
 
         update_dirty();
         update();
@@ -5674,9 +5677,15 @@ void TabSLAMaterial::toggle_tilt_options(bool is_above)
         bool use_tilt = boost::any_cast<bool>(optgroup->get_config_value(*m_config, "use_tilt", column_id));
 
         for (const std::string& opt_key : disable_tilt_options) {
+            bool state = use_tilt;
+            for (const auto& s : {"dynamic_delay_before", "dynamic_tilt_up", "dynamic_tilt_down"}) {
+                if (opt_key == std::string(s) + "_profile")
+                    state &= boost::any_cast<bool>(optgroup->get_config_value(*m_config, s, column_id));
+            }
+
             auto field = optgroup->get_fieldc(opt_key, column_id);
             if (field != nullptr)
-                field->toggle(use_tilt);
+                field->toggle(state);
         }
     }
 }
@@ -5687,7 +5696,8 @@ void TabSLAMaterial::toggle_options()
         update_material_overrides_page();
     if (m_active_page->title() == "Material printing profile")
         m_config_manipulation.toggle_material_sla_options(m_config);
-
+    toggle_tilt_options(true);
+    toggle_tilt_options(false);
 }
 
 void TabSLAMaterial::update()

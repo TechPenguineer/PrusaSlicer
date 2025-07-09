@@ -684,9 +684,6 @@ static std::vector<std::string> s_Preset_sla_tilt_options{
     ,"tower_hop_height"
     ,"tower_speed"
     ,"use_tilt"
-    ,"dynamic_delay_before"
-    ,"dynamic_tilt_down"
-    ,"dynamic_tilt_up"
     ,"tilt_down_initial_speed"
     ,"tilt_down_offset_steps"
     ,"tilt_down_offset_delay"
@@ -699,8 +696,11 @@ static std::vector<std::string> s_Preset_sla_tilt_options{
     ,"tilt_up_finish_speed"
     ,"tilt_up_cycles"
     ,"tilt_up_delay"
+    ,"dynamic_delay_before"
     ,"dynamic_delay_before_profile"
+    ,"dynamic_tilt_down"
     ,"dynamic_tilt_down_profile"
+    ,"dynamic_tilt_up"
     ,"dynamic_tilt_up_profile"
 };
 const std::vector<std::string>& tilt_options() { return s_Preset_sla_tilt_options; }

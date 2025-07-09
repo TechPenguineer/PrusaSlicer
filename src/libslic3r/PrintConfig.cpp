@@ -4907,7 +4907,7 @@ void PrintConfigDef::init_sla_tilt_params()
     def->tooltip = L("Delay before exposure after previous layer separation.");
     def->sidetext = L("s");
     def->min = 0;
-    def->max = 30;
+    def->max = 300;
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloats({ 3., 3.}));
 
@@ -5020,21 +5020,21 @@ void PrintConfigDef::init_sla_tilt_params()
     def->set_default_value(new ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750 }));
 
     def = this->add("dynamic_delay_before_profile", coEnums); 
-    def->full_label = L("dynamic_delay_before_profile");
+    def->full_label = L("Dynamic delay before profile");
     def->tooltip = L("TODO");
     def->mode = comExpert;
     def->set_enum<TiltDynamicDelayBefore>(tilt_dynamic_delay_before_il);
     def->set_default_value(new ConfigOptionEnums<TiltDynamicDelayBefore>({ tddbNeg02, tddbNeg02 }));
 
     def = this->add("dynamic_tilt_up_profile", coEnums); 
-    def->full_label = L("dynamic_tilt_up_profile");
+    def->full_label = L("Dynamic tilt up profile");
     def->tooltip = L("TODO");
     def->mode = comExpert;
     def->set_enum<TiltDynamicUp>(tilt_dynamic_up_il);
     def->set_default_value(new ConfigOptionEnums<TiltDynamicUp>({ tduThresholdSlowdown, tduThresholdSlowdown }));
 
     def = this->add("dynamic_tilt_down_profile", coEnums); 
-    def->full_label = L("tilt_down_finish_speed");
+    def->full_label = L("Dynamic tilt down profile");
     def->tooltip = L("TODO");
     def->mode = comExpert;
     def->set_enum<TiltDynamicDown>(tilt_dynamic_down_il);

@@ -501,6 +501,11 @@ void ConfigManipulation::toggle_print_sla_options(DynamicPrintConfig* config)
     toggle_field("pad_object_connector_penetration", zero_elev);
 }
 
+void ConfigManipulation::toggle_material_sla_options(DynamicPrintConfig* config)
+{
+    toggle_field("chamber_heater_temperature", config->opt_bool("chamber_heater_enable"));
+}
+
 
 } // GUI
 } // Slic3r

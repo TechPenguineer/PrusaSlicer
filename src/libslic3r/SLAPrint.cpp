@@ -889,9 +889,13 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         // tilt params
         "delay_before_exposure"sv,
         "delay_after_exposure"sv,
+        "delay_to_reflood"sv,
         "tower_hop_height"sv,
         "tower_speed"sv,
         "use_tilt"sv,
+        "dynamic_delay_before"sv,
+        "dynamic_tilt_down"sv,
+        "dynamic_tilt_up"sv,
         "tilt_down_initial_speed"sv,
         "tilt_down_offset_steps"sv,
         "tilt_down_offset_delay"sv,
@@ -904,7 +908,12 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         "tilt_up_finish_speed"sv,
         "tilt_up_cycles"sv,
         "tilt_up_delay"sv,
+        "dynamic_delay_before_profile"sv,
+        "dynamic_tilt_down_profile"sv,
+        "dynamic_tilt_up_profile"sv,
         "area_fill"sv,
+        "chamber_heater_enable"sv,
+        "chamber_heater_temperature"sv
     };
 
     static StaticSet steps_ignore = {

@@ -3037,7 +3037,6 @@ void TabPrinter::build_sla()
     line.append_option(optgroup->get_option("slow_tilt_time"));
     line.append_option(optgroup->get_option("high_viscosity_tilt_time"));
     optgroup->append_line(line);
-//    optgroup->append_single_option_line("area_fill");
 
     optgroup = page->new_optgroup(L("Corrections"));
     line = Line{ m_config->def()->get("relative_correction")->full_label, "" };
@@ -5530,20 +5529,15 @@ void TabSLAMaterial::build()
 
     page = add_options_page(L("Material printing profile"), "note");
 
-#if 1
     optgroup = page->new_optgroup(L("Material printing profile"));
     optgroup->append_single_option_line("material_print_speed");
 
     optgroup = page->new_optgroup(L("Tilt"));
     optgroup->append_single_option_line("area_fill");
 
-#else
-    optgroup = page->new_optgroup(L("Material printing profile"));
-    option = optgroup->get_option("material_print_speed");
-    optgroup->append_single_option_line(option);
-
-    optgroup->append_single_option_line("area_fill");
-#endif
+    optgroup = page->new_optgroup(L("Chamber heater"));
+    optgroup->append_single_option_line("chamber_heater_enable");
+    optgroup->append_single_option_line("chamber_heater_temperature");
 
     build_tilt_group(page);
 }
@@ -5663,6 +5657,12 @@ std::vector<std::string> disable_tilt_options = {
         ,"tilt_up_finish_speed"
         ,"tilt_up_cycles"
         ,"tilt_up_delay"
+        ,"dynamic_delay_before"
+        ,"dynamic_tilt_down"
+        ,"dynamic_tilt_up"
+        ,"dynamic_delay_before_profile"
+        ,"dynamic_tilt_down_profile"
+        ,"dynamic_tilt_up_profile"
 };
 
 void TabSLAMaterial::toggle_tilt_options(bool is_above)
@@ -5685,6 +5685,9 @@ void TabSLAMaterial::toggle_options()
 {
     if (m_active_page->title() == "Material Overrides")
         update_material_overrides_page();
+    if (m_active_page->title() == "Material printing profile")
+        m_config_manipulation.toggle_material_sla_options(m_config);
+
 }
 
 void TabSLAMaterial::update()

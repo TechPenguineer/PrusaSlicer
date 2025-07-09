@@ -633,7 +633,7 @@ static std::vector<std::string> s_Preset_sla_print_options {
     "inherits"
 };
 
-static std::vector<std::string> s_Preset_sla_material_options {
+static std::vector<std::string> s_Preset_sla_material_options{
     "material_colour",
     "material_type",
     "initial_layer_height",
@@ -651,10 +651,15 @@ static std::vector<std::string> s_Preset_sla_material_options {
     "material_vendor",
     "material_print_speed",
     "area_fill",
+    "chamber_heater_enable",
+    "chamber_heater_temperature",
     "default_sla_material_profile",
     "zcorrection_layers",
-    "compatible_prints", "compatible_prints_condition",
-    "compatible_printers", "compatible_printers_condition", "inherits",
+    "compatible_prints",
+    "compatible_prints_condition",
+    "compatible_printers",
+    "compatible_printers_condition",
+    "inherits",
 
     // overriden options
     "material_ow_support_head_front_diameter",
@@ -675,9 +680,13 @@ static std::vector<std::string> s_Preset_sla_material_options {
 static std::vector<std::string> s_Preset_sla_tilt_options{
      "delay_before_exposure"
     ,"delay_after_exposure"
+    ,"delay_to_reflood"
     ,"tower_hop_height"
     ,"tower_speed"
     ,"use_tilt"
+    ,"dynamic_delay_before"
+    ,"dynamic_tilt_down"
+    ,"dynamic_tilt_up"
     ,"tilt_down_initial_speed"
     ,"tilt_down_offset_steps"
     ,"tilt_down_offset_delay"
@@ -690,6 +699,9 @@ static std::vector<std::string> s_Preset_sla_tilt_options{
     ,"tilt_up_finish_speed"
     ,"tilt_up_cycles"
     ,"tilt_up_delay"
+    ,"dynamic_delay_before_profile"
+    ,"dynamic_tilt_down_profile"
+    ,"dynamic_tilt_up_profile"
 };
 const std::vector<std::string>& tilt_options() { return s_Preset_sla_tilt_options; }
 
@@ -701,7 +713,7 @@ static std::vector<std::string> s_Preset_sla_printer_options {
     "display_width", "display_height", "display_pixels_x", "display_pixels_y",
     "display_mirror_x", "display_mirror_y",
     "display_orientation",
-    "fast_tilt_time", "slow_tilt_time", "high_viscosity_tilt_time", //"area_fill",
+    "fast_tilt_time", "slow_tilt_time", "high_viscosity_tilt_time",
     "relative_correction",
     "relative_correction_x",
     "relative_correction_y",

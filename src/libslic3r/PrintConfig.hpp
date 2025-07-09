@@ -232,6 +232,18 @@ enum TiltSpeeds : int {
     tsMove8000,
 };
 
+enum TiltDynamicDelayBefore : int {
+    tddbNeg02
+};
+
+enum TiltDynamicUp : int {
+    tduThresholdSlowdown
+};
+
+enum TiltDynamicDown : int {
+    tddFirstPeak
+};
+
 enum class EnsureVerticalShellThickness {
     Disabled,
     Partial,
@@ -1265,13 +1277,20 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloatNullable,               material_ow_elefant_foot_compensation))
     ((ConfigOptionFloatNullable,               material_ow_absolute_correction))
     ((ConfigOptionFloat,                       area_fill))
+    ((ConfigOptionBool,                        chamber_heater_enable))
+    ((ConfigOptionFloat,                       chamber_heater_temperature))
+    
 
     //tilt params
     ((ConfigOptionFloats,                      delay_before_exposure))
     ((ConfigOptionFloats,                      delay_after_exposure))
+    ((ConfigOptionFloats,                      delay_to_reflood))
     ((ConfigOptionFloats,                      tower_hop_height))
     ((ConfigOptionEnums<TowerSpeeds>,          tower_speed))
     ((ConfigOptionBools,                       use_tilt))
+    ((ConfigOptionBools,                       dynamic_delay_before))
+    ((ConfigOptionBools,                       dynamic_tilt_down))
+    ((ConfigOptionBools,                       dynamic_tilt_up))
     ((ConfigOptionEnums<TiltSpeeds>,           tilt_down_initial_speed))
     ((ConfigOptionInts,                        tilt_down_offset_steps))
     ((ConfigOptionFloats,                      tilt_down_offset_delay))
@@ -1284,6 +1303,9 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnums<TiltSpeeds>,           tilt_up_finish_speed))
     ((ConfigOptionInts,                        tilt_up_cycles))
     ((ConfigOptionFloats,                      tilt_up_delay))
+    ((ConfigOptionEnums<TiltDynamicDelayBefore>, dynamic_delay_before_profile))
+    ((ConfigOptionEnums<TiltDynamicDown>,      dynamic_tilt_down_profile))
+    ((ConfigOptionEnums<TiltDynamicUp>,        dynamic_tilt_up_profile))
 )
 
 PRINT_CONFIG_CLASS_DEFINE(
@@ -1310,7 +1332,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                      fast_tilt_time))
     ((ConfigOptionFloat,                      slow_tilt_time))
     ((ConfigOptionFloat,                      high_viscosity_tilt_time))
-//    ((ConfigOptionFloat,                      area_fill))
     ((ConfigOptionFloat,                      min_exposure_time))
     ((ConfigOptionFloat,                      max_exposure_time))
     ((ConfigOptionFloat,                      min_initial_exposure_time))

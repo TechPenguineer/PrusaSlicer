@@ -314,6 +314,21 @@ static const t_config_enum_values s_keys_map_TiltSpeeds{
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltSpeeds)
 
+static const t_config_enum_values s_keys_map_TiltDynamicDelayBefore{
+    {"neg0_2", tddbNeg02}
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltDynamicDelayBefore)
+
+static const t_config_enum_values s_keys_map_TiltDynamicUp{
+    {"threshold_slowdown", tduThresholdSlowdown}
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltDynamicUp)
+
+static const t_config_enum_values s_keys_map_TiltDynamicDown{
+    {"first_peak", tddFirstPeak}
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltDynamicDown)
+
 static const t_config_enum_values s_keys_map_EnsureVerticalShellThickness {
     { "disabled", int(EnsureVerticalShellThickness::Disabled) },
     { "partial",  int(EnsureVerticalShellThickness::Partial)  },
@@ -4357,6 +4372,20 @@ void PrintConfigDef::init_sla_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(35.));
 
+    def = this->add("chamber_heater_enable", coBool);
+    def->label = L("Enable chamber heater");
+    def->tooltip = L("TODO");
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("chamber_heater_temperature", coFloat);
+    def->label = L("Chamber heater temperature");
+    def->tooltip = L("TODO");
+    def->sidetext = L("°C");
+    def->min = 0;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(40.));
+
     def = this->add("relative_correction", coFloats);
     def->label = L("Printer scaling correction");
     def->full_label = L("Printer scaling correction");
@@ -4891,6 +4920,15 @@ void PrintConfigDef::init_sla_tilt_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloats({ 0., 0.}));
 
+    def = this->add("delay_to_reflood", coFloats);
+    def->full_label = L("Delay to reflood");
+    def->tooltip = L("TODO");
+    def->sidetext = L("s");
+    def->min = 0;
+    def->max = 300;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionFloats({ 0., 0.}));
+
     def = this->add("tower_hop_height", coFloats);
     def->full_label = L("Tower hop height");
     def->tooltip = L("The height of the tower raise.");
@@ -4937,6 +4975,18 @@ void PrintConfigDef::init_sla_tilt_params()
         { "move8000",   "8000"  },
     };
 
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_delay_before_il = {
+        { "neg0_2",   "neg0_2" }
+    };
+
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_up_il = {
+        {"threshold_slowdown", "threshold_slowdown"},
+    };
+
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_down_il = {
+        {"first_peak", "first_peak"}
+    };
+
     def = this->add("tilt_down_initial_speed", coEnums); 
     def->full_label = L("Tilt down initial speed");
     def->tooltip = L("Tilt speed used for an initial portion of tilt down move.");
@@ -4968,6 +5018,45 @@ void PrintConfigDef::init_sla_tilt_params()
     def->sidetext = L("μ-steps/s");
     def->set_enum<TiltSpeeds>(tilt_speeds_il);
     def->set_default_value(new ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750 }));
+
+    def = this->add("dynamic_delay_before_profile", coEnums); 
+    def->full_label = L("dynamic_delay_before_profile");
+    def->tooltip = L("TODO");
+    def->mode = comExpert;
+    def->set_enum<TiltDynamicDelayBefore>(tilt_dynamic_delay_before_il);
+    def->set_default_value(new ConfigOptionEnums<TiltDynamicDelayBefore>({ tddbNeg02, tddbNeg02 }));
+
+    def = this->add("dynamic_tilt_up_profile", coEnums); 
+    def->full_label = L("dynamic_tilt_up_profile");
+    def->tooltip = L("TODO");
+    def->mode = comExpert;
+    def->set_enum<TiltDynamicUp>(tilt_dynamic_up_il);
+    def->set_default_value(new ConfigOptionEnums<TiltDynamicUp>({ tduThresholdSlowdown, tduThresholdSlowdown }));
+
+    def = this->add("dynamic_tilt_down_profile", coEnums); 
+    def->full_label = L("tilt_down_finish_speed");
+    def->tooltip = L("TODO");
+    def->mode = comExpert;
+    def->set_enum<TiltDynamicDown>(tilt_dynamic_down_il);
+    def->set_default_value(new ConfigOptionEnums<TiltDynamicDown>({ tddFirstPeak, tddFirstPeak } ));
+
+    def = this->add("dynamic_delay_before", coBools);
+    def->full_label = L("Dynamic delay before");
+    def->tooltip = L("TODO");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionBools({ false, false }));
+
+    def = this->add("dynamic_tilt_down", coBools);
+    def->full_label = L("Dynamic tilt down");
+    def->tooltip = L("TODO");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionBools({ false, false }));
+
+    def = this->add("dynamic_tilt_up", coBools);
+    def->full_label = L("Dynamic tilt up");
+    def->tooltip = L("TODO");
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionBools({ false, false }));
 
     def = this->add("use_tilt", coBools);
     def->full_label = L("Use tilt");
@@ -5344,6 +5433,7 @@ const std::map<std::string, ConfigOptionFloats> tilt_options_floats_defs =
     {"tilt_down_delay",          ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
     {"tilt_up_offset_delay",     ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
     {"tilt_up_delay",            ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
+    {"delay_to_reflood",         ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
     {"tower_hop_height",         ConfigOptionFloats({ 0., 0., 0., 0., 5., 5., 0., 0. }) } ,
 };
 
@@ -5358,6 +5448,9 @@ const std::map<std::string, ConfigOptionInts> tilt_options_ints_defs =
 const std::map<std::string, ConfigOptionBools> tilt_options_bools_defs =
 {
     {"use_tilt",                    ConfigOptionBools({ true, true, true, true, true, true, false, false })} ,
+    {"dynamic_delay_before",        ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
+    {"dynamic_tilt_down",           ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
+    {"dynamic_tilt_up",             ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
 };
 
 const std::map<std::string, ConfigOptionEnums<TowerSpeeds>> tower_tilt_options_enums_defs =
@@ -5369,8 +5462,8 @@ const std::map<std::string, ConfigOptionEnums<TiltSpeeds>> tilt_options_enums_de
 {
     {"tilt_down_initial_speed",   ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750, tsLayer1750, tsLayer1750, tsLayer800, tsLayer800, tsMove120, tsMove120 }) } ,
     {"tilt_down_finish_speed",    ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750, tsMove8000, tsLayer1750, tsLayer1750, tsLayer1750, tsMove120, tsMove120 }) } ,
-    {"tilt_up_initial_speed",     ConfigOptionEnums<TiltSpeeds>({ tsMove8000, tsMove8000, tsMove8000, tsMove8000, tsLayer1750, tsLayer1750, tsMove120, tsMove120 }) } ,
-    {"tilt_up_finish_speed",      ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750, tsLayer1750, tsLayer1750, tsLayer800, tsLayer800, tsMove120, tsMove120 }) } ,
+    {"tilt_up_initial_speed",     ConfigOptionEnums<TiltSpeeds>({ tsMove8000, tsMove8000, tsMove8000, tsMove8000, tsLayer1750, tsLayer1750, tsMove120, tsMove120 }) },
+    {"tilt_up_finish_speed",      ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750, tsLayer1750, tsLayer1750, tsLayer800, tsLayer800, tsMove120, tsMove120 }) }
 };
 
 // Default values containe option pair of values (Below and Above) for each titl modes 
@@ -5384,6 +5477,7 @@ const std::map<std::string, ConfigOptionFloats> tilt_options_floats_sl1_defs =
     {"tilt_down_delay",          ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
     {"tilt_up_offset_delay",     ConfigOptionFloats({ 0., 0., 0., 0., 1., 1., 0., 0. }) } ,
     {"tilt_up_delay",            ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
+    {"delay_to_reflood",         ConfigOptionFloats({ 0., 0., 0., 0., 0., 0., 0., 0. }) } ,
     {"tower_hop_height",         ConfigOptionFloats({ 0., 0., 0., 0., 5., 5., 0., 0. }) } ,
 };
 
@@ -5398,6 +5492,9 @@ const std::map<std::string, ConfigOptionInts> tilt_options_ints_sl1_defs =
 const std::map<std::string, ConfigOptionBools> tilt_options_bools_sl1_defs =
 {
     {"use_tilt",                    ConfigOptionBools({ true, true, true, true, true, true, false, false })} ,
+    {"dynamic_delay_before",        ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
+    {"dynamic_tilt_down",           ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
+    {"dynamic_tilt_up",             ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
 };
 
 
@@ -5484,10 +5581,15 @@ void update_tilts_by_mode(DynamicPrintConfig& config, int tilt_mode, bool is_sl1
                 val1 = values.get_at(2 * tilt_mode);
                 val2 = values.get_at(2 * tilt_mode + 1);
             }
-            else {
+            else if (boost::starts_with(opt_key, "tilt_")) {
                 auto values = tilt_enums_defs.at(opt_key);
                 val1 = values.get_at(2 * tilt_mode);
                 val2 = values.get_at(2 * tilt_mode + 1);
+            } else if (boost::starts_with(opt_key, "dynamic_")) {
+                val1 = 0;
+                val2 = 0;
+            } else {
+                assert(false);
             }
             config.set_key_value(opt_key, new ConfigOptionEnumsGeneric({ val1, val2 }));
         }

@@ -57,6 +57,7 @@ static std::string get_key(const std::string& opt_key)
 {
     static const std::set<std::string> ms_opts = {
       "delay_before_exposure"
+    , "delay_to_reflood"
     , "delay_after_exposure"
     , "tilt_down_offset_delay"
     , "tilt_up_offset_delay"
@@ -125,7 +126,22 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
         }
         break;
         case coEnums: {
-            const t_config_enum_names& enum_names = opt_key == "tower_speed" ? tower_enum_names : tilt_enum_names;
+
+            t_config_enum_names enum_names;
+            if (opt_key == "tower_speed")
+                enum_names = tower_enum_names;
+            else if (boost::starts_with(opt_key, "tilt_"))
+                enum_names = tilt_enum_names;
+            else if (opt_key == "dynamic_delay_before_profile")
+                enum_names = ConfigOptionEnum<TiltDynamicDelayBefore>::get_enum_names();
+            else if (opt_key == "dynamic_tilt_up_profile")
+                enum_names = ConfigOptionEnum<TiltDynamicUp>::get_enum_names();
+            else if (opt_key == "dynamic_tilt_down_profile")
+                enum_names = ConfigOptionEnum<TiltDynamicDown>::get_enum_names();
+            else
+                std::terminate();
+
+
             auto values = static_cast<const ConfigOptionEnums<TiltSpeeds>*>(opt);
             below_node.put(get_key(opt_key), enum_names[values->get_at(0)]);
             above_node.put(get_key(opt_key), enum_names[values->get_at(1)]);
@@ -139,6 +155,8 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
 
     pt::ptree profile_node;
     profile_node.put("area_fill", cfg.option("area_fill")->serialize());
+    profile_node.put("chamber_heater_enable", cfg.opt_bool("chamber_heater_enable"));
+    profile_node.put("chamber_heater_temperature", cfg.option("chamber_heater_temperature")->serialize());
     profile_node.add_child("below_area_fill", below_node);
     profile_node.add_child("above_area_fill", above_node);
 

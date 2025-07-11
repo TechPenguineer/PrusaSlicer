@@ -295,6 +295,16 @@ Option::Option(const ConfigOptionDef& _opt, t_config_option_key id) : opt(_opt),
     }
 }
 
+bool Line::has_option(const std::string& opt_key) const
+{
+    for (const auto& opt : m_options) {
+        if (opt.opt_id == opt_key) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Line::clear()
 {
     if (near_label_widget_win)
@@ -370,6 +380,13 @@ void OptionsGroup::show_field(const t_config_option_key& opt_key, bool show/* = 
                 return;
         }
         row_shift += cols;
+    }
+}
+
+void OptionsGroup::show_line(const t_config_option_key& opt_key, bool show)
+{
+    if (custom_ctrl) {
+        custom_ctrl->show_line(opt_key, show);
     }
 }
 

@@ -99,9 +99,10 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
     pt::ptree above_node;
 
     const t_config_enum_names& tilt_enum_names  = ConfigOptionEnum< TiltSpeeds>::get_enum_names();
+    const t_config_enum_names& tilt_enum_names_slx  = ConfigOptionEnum< TiltSpeedsSLX>::get_enum_names();
     const t_config_enum_names& tower_enum_names = ConfigOptionEnum<TowerSpeeds>::get_enum_names();
 
-    for (const std::string& opt_key : tilt_options()) {
+    for (std::string opt_key : tilt_options()) {
         const ConfigOption* opt = cfg.option(opt_key);
         assert(opt != nullptr);
 
@@ -130,8 +131,17 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
             t_config_enum_names enum_names;
             if (opt_key == "tower_speed")
                 enum_names = tower_enum_names;
-            else if (boost::starts_with(opt_key, "tilt_"))
-                enum_names = tilt_enum_names;
+            else if (boost::starts_with(opt_key, "tilt_")) {
+                const bool is_slx = cfg.opt_string("printer_model") == "SLX";
+                if (is_slx && boost::ends_with(opt_key, "_slx")) {
+                    enum_names = tilt_enum_names_slx;
+                    opt_key.resize(opt_key.size() - 4); // trim the suffix
+                }
+                else if (! is_slx && ! boost::ends_with(opt_key, "_slx"))
+                    enum_names = tilt_enum_names;
+                else
+                    continue;
+            }
             else if (opt_key == "dynamic_delay_before_profile")
                 enum_names = ConfigOptionEnum<TiltDynamicDelayBefore>::get_enum_names();
             else if (opt_key == "dynamic_tilt_up_profile")

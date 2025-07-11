@@ -232,6 +232,19 @@ enum TiltSpeeds : int {
     tsMove8000,
 };
 
+enum TiltSpeedsSLX : int {
+    tssLayer160,
+    tssLayer1600,
+    tssLayer3040,
+    tssLayer4480,
+    tssLayer5920,
+    tssLayer7360,
+    tssLayer8800,
+    tssLayer10240,
+    tssLayer11680,
+    tssLayer13120,
+};
+
 enum TiltDynamicDelayBefore : int {
     tddbNeg02
 };
@@ -1291,6 +1304,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionBools,                       dynamic_delay_before))
     ((ConfigOptionBools,                       dynamic_tilt_down))
     ((ConfigOptionBools,                       dynamic_tilt_up))
+    
     ((ConfigOptionEnums<TiltSpeeds>,           tilt_down_initial_speed))
     ((ConfigOptionInts,                        tilt_down_offset_steps))
     ((ConfigOptionFloats,                      tilt_down_offset_delay))
@@ -1303,6 +1317,10 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnums<TiltSpeeds>,           tilt_up_finish_speed))
     ((ConfigOptionInts,                        tilt_up_cycles))
     ((ConfigOptionFloats,                      tilt_up_delay))
+    ((ConfigOptionEnums<TiltSpeedsSLX>,        tilt_down_finish_speed_slx))
+    ((ConfigOptionEnums<TiltSpeedsSLX>,        tilt_up_initial_speed_slx))
+    ((ConfigOptionEnums<TiltSpeedsSLX>,        tilt_down_initial_speed_slx))
+    ((ConfigOptionEnums<TiltSpeedsSLX>,        tilt_up_finish_speed_slx))
     ((ConfigOptionEnums<TiltDynamicDelayBefore>, dynamic_delay_before_profile))
     ((ConfigOptionEnums<TiltDynamicDown>,      dynamic_tilt_down_profile))
     ((ConfigOptionEnums<TiltDynamicUp>,        dynamic_tilt_up_profile))

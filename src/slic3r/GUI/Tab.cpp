@@ -5649,17 +5649,21 @@ void TabSLAMaterial::create_line_with_tilt_defaults(ConfigOptionsGroupShp optgro
 
 std::vector<std::string> disable_tilt_options = {
          "tilt_down_initial_speed"
+        ,"tilt_down_initial_speed_slx"
         ,"tilt_down_offset_steps"
         ,"tilt_down_offset_delay"
         ,"tilt_down_finish_speed"
         ,"tilt_down_cycles"
         ,"tilt_down_delay"
+        ,"tilt_down_finish_speed_slx"
         ,"tilt_up_initial_speed"
+        ,"tilt_up_initial_speed_slx"
         ,"tilt_up_offset_steps"
         ,"tilt_up_offset_delay"
         ,"tilt_up_finish_speed"
         ,"tilt_up_cycles"
         ,"tilt_up_delay"
+        ,"tilt_up_finish_speed_slx"
         ,"dynamic_delay_before"
         ,"dynamic_tilt_down"
         ,"dynamic_tilt_up"
@@ -5741,6 +5745,34 @@ bool Tab::is_prusa_printer() const
     return SLAPrint::is_prusa_print(printer_model());
 }
 
+static std::vector<std::string> show_for_slx = {
+    "tilt_down_initial_speed_slx",
+    "tilt_down_finish_speed_slx",
+    "tilt_up_initial_speed_slx",
+    "tilt_up_finish_speed_slx",
+    "delay_to_reflood",
+    "dynamic_delay_before",
+    "dynamic_tilt_down",
+    "dynamic_tilt_up",
+    "dynamic_delay_before_profile",
+    "dynamic_tilt_down_profile",
+    "dynamic_tilt_up_profile"
+};
+
+static std::vector<std::string> hide_for_slx = {
+    "tilt_down_initial_speed",
+    "tilt_down_finish_speed",
+    "tilt_up_initial_speed",
+    "tilt_up_finish_speed",
+    "delay_after_exposure",
+    "tilt_down_cycles",
+    "tilt_down_delay",
+    "tilt_down_offset_delay",
+    "tilt_up_cycles",
+    "tilt_up_delay",
+    "tilt_up_offset_delay"
+};
+
 void TabSLAMaterial::update_sla_prusa_specific_visibility()
 {
     if (m_active_page && m_active_page->title() == "Material printing profile") {
@@ -5751,6 +5783,14 @@ void TabSLAMaterial::update_sla_prusa_specific_visibility()
                 og_it->get()->Show(m_mode >= comAdvanced && is_prusa_printer());
                 const std::string pr_model = printer_model();
                 m_tilt_defaults_sizer->Show(pr_model == "SL1S" || pr_model == "M1");
+
+                if (og_it->get()->title == "Profile settings") {
+                    bool is_slx = pr_model == "SLX";
+                    for (const auto& opt : show_for_slx)
+                        og_it->get()->show_line(opt + "#0", is_slx);
+                    for (const auto& opt : hide_for_slx)
+                        og_it->get()->show_line(opt + "#0", ! is_slx);
+                }
             }
         }
 

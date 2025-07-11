@@ -913,7 +913,11 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         "dynamic_tilt_up_profile"sv,
         "area_fill"sv,
         "chamber_heater_enable"sv,
-        "chamber_heater_temperature"sv
+        "chamber_heater_temperature"sv,
+        "tilt_down_initial_speed_slx"sv,
+        "tilt_down_finish_speed_slx"sv,
+        "tilt_up_initial_speed_slx"sv,
+        "tilt_up_finish_speed_slx"sv
     };
 
     static StaticSet steps_ignore = {

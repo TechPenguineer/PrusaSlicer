@@ -314,6 +314,20 @@ static const t_config_enum_values s_keys_map_TiltSpeeds{
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltSpeeds)
 
+static const t_config_enum_values s_keys_map_TiltSpeedsSLX{
+    { "layer160",    tssLayer160     },
+    { "layer1600",   tssLayer1600   },
+    { "layer3040",   tssLayer3040    },
+    { "layer4480",   tssLayer4480   },
+    { "layer5920",   tssLayer5920   },
+    { "layer7360",   tssLayer7360   },
+    { "layer8800",   tssLayer8800   },
+    { "layer10240",  tssLayer10240  },
+    { "layer11680",  tssLayer11680  },
+    { "layer13120",  tssLayer13120  },
+};
+CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltSpeedsSLX)
+
 static const t_config_enum_values s_keys_map_TiltDynamicDelayBefore{
     {"neg0_2", tddbNeg02}
 };
@@ -4975,6 +4989,19 @@ void PrintConfigDef::init_sla_tilt_params()
         { "move8000",   "8000"  },
     };
 
+    const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_speeds_slx_il = {
+        { "layer160",   "160"   },
+        { "layer1600",  "1600"  },
+        { "layer3040",  "3040"  },
+        { "layer4480",  "4480"  },
+        { "layer5920",  "5920"  },
+        { "laye7360",   "7360"  },
+        { "layer8800",  "8800"  },
+        { "layer10240", "10240" },
+        { "layer11680", "11680" },
+        { "layer13120", "13120" }
+    };
+
     const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_delay_before_il = {
         { "neg0_2",   "neg0_2" }
     };
@@ -5018,6 +5045,38 @@ void PrintConfigDef::init_sla_tilt_params()
     def->sidetext = L("μ-steps/s");
     def->set_enum<TiltSpeeds>(tilt_speeds_il);
     def->set_default_value(new ConfigOptionEnums<TiltSpeeds>({ tsLayer1750, tsLayer1750 }));
+
+    def = this->add("tilt_down_initial_speed_slx", coEnums); 
+    def->full_label = L("Tilt down initial speed");
+    def->tooltip = L("Tilt speed used for an initial portion of tilt down move.");
+    def->mode = comExpert;
+    def->sidetext = L("μ-steps/s");
+    def->set_enum<TiltSpeedsSLX>(tilt_speeds_slx_il);
+    def->set_default_value(new ConfigOptionEnums<TiltSpeedsSLX>({ tssLayer160, tssLayer160 }));
+
+    def = this->add("tilt_down_finish_speed_slx", coEnums); 
+    def->full_label = L("Tilt down finish speed");
+    def->tooltip = L("Tilt speed used for the rest of the tilt down move.");
+    def->mode = comExpert;
+    def->sidetext = L("μ-steps/s");
+    def->set_enum<TiltSpeedsSLX>(tilt_speeds_slx_il);
+    def->set_default_value(new ConfigOptionEnums<TiltSpeedsSLX>({ tssLayer160, tssLayer160 }));
+
+    def = this->add("tilt_up_initial_speed_slx", coEnums); 
+    def->full_label = L("Tilt up initial speed");
+    def->tooltip = L("Tilt speed used for an initial portion of tilt up move.");
+    def->mode = comExpert;
+    def->sidetext = L("μ-steps/s");
+    def->set_enum<TiltSpeedsSLX>(tilt_speeds_slx_il);
+    def->set_default_value(new ConfigOptionEnums<TiltSpeedsSLX>({ tssLayer160, tssLayer160 }));
+
+    def = this->add("tilt_up_finish_speed_slx", coEnums); 
+    def->full_label = L("Tilt up finish speed");
+    def->tooltip = L("Tilt speed used for the rest of the tilt-up.");
+    def->mode = comExpert;
+    def->sidetext = L("μ-steps/s");
+    def->set_enum<TiltSpeedsSLX>(tilt_speeds_slx_il);
+    def->set_default_value(new ConfigOptionEnums<TiltSpeedsSLX>({ tssLayer160, tssLayer160 }));
 
     def = this->add("dynamic_delay_before_profile", coEnums); 
     def->full_label = L("Dynamic delay before profile");
@@ -5552,6 +5611,11 @@ void update_tilts_by_mode(DynamicPrintConfig& config, int tilt_mode, bool is_sl1
     const std::map<std::string, ConfigOptionEnums<TiltSpeeds>>    tilt_enums_defs  = is_sl1_model ? tilt_options_enums_sl1_defs : tilt_options_enums_defs;
 
     for (const std::string& opt_key : tilt_options()) {
+        if (boost::ends_with(opt_key, "_slx")) {
+            // These options are for SLX only, and SLX does not have the legacy
+            // Fast/Slow/HighViscosity buttons. Do not touch them.
+            continue;
+        }
         switch (config.def()->get(opt_key)->type) {
         case coFloats: {
             ConfigOptionFloats values = floats_defs.at(opt_key);

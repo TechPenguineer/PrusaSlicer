@@ -238,6 +238,11 @@ void Sidebar::show_preset_comboboxes()
 
     m_frequently_changed_parameters->Show(!showSLA);
 
+    const Tab* tab = wxGetApp().get_tab(Preset::TYPE_PRINTER);
+    bool is_prusa_slx = showSLA && tab->is_prusa_printer() && tab->printer_model() == "SLX";
+    for (size_t i = 11; i < 13; ++i)
+        m_presets_sizer->Show(i, is_prusa_slx);
+
     m_scrolled_panel->GetParent()->Layout();
     m_scrolled_panel->Refresh();
 }
@@ -335,7 +340,7 @@ Sidebar::Sidebar(Plater *parent)
     m_scrolled_panel->SetSizer(scrolled_sizer);
 
     // The preset chooser
-    m_presets_sizer = new wxFlexGridSizer(10, 1, 1, 2);
+    m_presets_sizer = new wxFlexGridSizer(12, 1, 1, 2);
     m_presets_sizer->AddGrowableCol(0, 1);
     m_presets_sizer->SetFlexibleDirection(wxBOTH);
 
@@ -405,6 +410,8 @@ Sidebar::Sidebar(Plater *parent)
     init_combo(&m_combo_sla_print,     _L("SLA print settings"), Preset::TYPE_SLA_PRINT,     false);
     init_combo(&m_combo_sla_material,  _L("SLA material"),       Preset::TYPE_SLA_MATERIAL,  false);
     init_combo(&m_combo_printer,       _L("Printer"),            Preset::TYPE_PRINTER,       false);
+
+    init_workflow_combo(margin_5);
 
     wxBoxSizer* params_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -636,6 +643,13 @@ void Sidebar::update_all_preset_comboboxes()
     else {
         m_combo_sla_print->update();
         m_combo_sla_material->update();
+
+        // Update workflow combobox if needed
+        const Tab *tab = wxGetApp().get_tab(Preset::TYPE_PRINTER);
+        if (tab->is_prusa_printer() && tab->printer_model() == "SLX") {
+            // lmTODO -> set correct items and selection
+            set_workflow_combobox({"Workflow 1", "Workflow 2", "Workflow 3", "Workflow 4"}, 2);
+        }
     }
     // Update the printer choosers, update the dirty flags.
     m_combo_printer->update();
@@ -705,6 +719,15 @@ void Sidebar::update_presets(Preset::Type preset_type)
 
 void Sidebar::on_select_preset(wxCommandEvent& evt)
 {
+    /** Note: The sidebar handles all wxEVT_COMBOBOX events emitted by its owned comboboxes.
+     * With the introduction of additional combobox types beyond PlaterPresetComboBox,
+     * we must now explicitly verify that the event originated from other combobox before processing.
+     **/
+    if (evt.GetEventObject() == m_workflow) {
+        on_workflow_changed();
+        return;
+    }
+
     PlaterPresetComboBox* combo = static_cast<PlaterPresetComboBox*>(evt.GetEventObject());
     Preset::Type preset_type = combo->get_type();
 
@@ -787,6 +810,72 @@ void Sidebar::update_reslice_btn_tooltip()
 #else
     m_btn_reslice->SetToolTip(tooltip);
 #endif
+}
+
+void Sidebar::init_workflow_combo(int margin_5)
+{
+    auto *text = new wxStaticText(m_presets_panel, wxID_ANY, _L("Workflow") + ":");
+    text->SetFont(wxGetApp().small_font());
+    m_presets_sizer->Add(text, 0, wxALIGN_LEFT | wxEXPAND | wxRIGHT, 4);
+
+    m_workflow = new BitmapComboBox(
+        m_presets_panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr,
+        wxCB_READONLY
+    );
+
+    auto combo_and_btn_sizer = new wxBoxSizer(wxHORIZONTAL);
+    combo_and_btn_sizer->Add(m_workflow, 1, wxEXPAND);
+
+    /* Not a best solution, but
+     * Temporary workaround for right border alignment
+     */
+    auto empty_btn = new ScalableButton(
+        m_presets_panel, wxID_ANY, "mirroring_transparent", wxEmptyString, wxDefaultSize,
+        wxDefaultPosition, wxBU_EXACTFIT | wxNO_BORDER | wxTRANSPARENT_WINDOW
+    );
+
+    combo_and_btn_sizer->Add(
+        empty_btn, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, int(0.3 * wxGetApp().em_unit())
+    );
+
+    m_presets_sizer->Add(
+        combo_and_btn_sizer, 0,
+        wxEXPAND |
+#ifdef __WXGTK3__
+            wxRIGHT,
+        margin_5
+    );
+#else
+            wxBOTTOM,
+        1
+    );
+#endif
+}
+
+void Sidebar::set_workflow_combobox(const std::vector<std::string> &items, int selection)
+{
+    m_workflow->Clear();
+
+    for (const std::string &item : items) {
+        m_workflow->Append(from_u8(item), *get_bmp_bundle("sla_printer"));
+    }
+
+    m_workflow->Select(selection);
+}
+
+void Sidebar::on_workflow_changed()
+{
+    int new_selection = m_workflow->GetSelection();
+    wxString selected_string = m_workflow->GetLabel();
+    MessageDialog(
+        this,
+        format_wxstr(
+            "New selected workflow index is %1% with name %2%", new_selection, selected_string
+        ),
+        "Info", wxOK | wxICON_INFORMATION | wxCENTRE
+    )
+        .ShowModal();
+    // lmTODO
 }
 
 void Sidebar::msw_rescale()

@@ -151,6 +151,8 @@ public:
     // Support mesh is only valid if this->is_step_done(slaposPad) is true.
     const TriangleMesh&     pad_mesh() const;
 
+    double surface_area_estimate() const;
+
     // Get the mesh that is going to be printed with all the modifications
     // like hollowing and drilled holes.
     const std::shared_ptr<const indexed_triangle_set>& get_mesh_to_print() const;

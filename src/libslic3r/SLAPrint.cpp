@@ -9,6 +9,7 @@
 #include "CSGMesh/PerformCSGMeshBooleans.hpp"
 #include "format.hpp"
 #include "StaticMap.hpp"
+#include "libslic3r/ClipperUtils.hpp"
 
 #include "Format/SLAArchiveFormatRegistry.hpp"
 
@@ -1227,6 +1228,41 @@ const TriangleMesh& SLAPrintObject::pad_mesh() const
         return m_supportdata->pad_mesh;
 
     return EMPTY_MESH;
+}
+
+double SLAPrintObject::surface_area_estimate() const
+{
+    const double layer_height = config().layer_height.value;
+    if (layer_height <= 0.)
+        return 0.;
+
+    double area = 0.;
+    for (size_t a=0; a<2; ++a) {
+        if (a==0) {
+            if (! is_step_done(slaposSupportTree) || ! is_step_done(slaposPad) || ! m_supportdata)
+                continue;
+        }
+        const std::vector<ExPolygons>& slices = (a==0 ? m_supportdata->support_slices : m_model_slices);
+        if (slices.empty())
+            continue;
+
+        for (size_t j = 0; j < slices.size(); ++j) {
+            double perimeter_length = 0.;
+            for (const ExPolygon& ep : slices[j]) {
+                perimeter_length += unscaled(ep.contour.length());
+                for (const Polygon& p : ep.holes)
+                    perimeter_length += unscaled(p.length());
+            }
+            area += perimeter_length * layer_height;
+
+            ExPolygons from_below = (j==0 ? slices[0] : diff_ex(slices[j], slices[j-1]));
+            area += std::accumulate(from_below.begin(), from_below.end(), 0., [](double sum, const ExPolygon& ep) { return sum + unscaled(unscaled(ep.area())); });
+
+            ExPolygons from_above = (j == slices.size()-1 ? slices[j] : diff_ex(slices[j], slices[j+1]));
+            area += std::accumulate(from_above.begin(), from_above.end(), 0., [](double sum, const ExPolygon& ep) { return sum + unscaled(unscaled(ep.area())); });
+        }
+    }
+    return area;
 }
 
 const std::shared_ptr<const indexed_triangle_set> &

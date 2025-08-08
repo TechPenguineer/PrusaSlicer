@@ -91,9 +91,17 @@ static std::string get_key(const std::string& opt_key)
 
 namespace pt = boost::property_tree;
 
+static float get_print_area(const SLAPrint &print) {
+    float area = 0.;
+    for (const SLAPrintObject* obj : print.objects())
+        area += obj->surface_area_estimate();
+    return area;
+}
+
 std::string to_json(const SLAPrint& print, const ConfMap &m)
 {
     auto& cfg = print.full_print_config();
+    const bool is_slx = cfg.opt_string("printer_model") == "SLX";
 
     pt::ptree below_node;
     pt::ptree above_node;
@@ -132,7 +140,6 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
             if (opt_key == "tower_speed")
                 enum_names = tower_enum_names;
             else if (boost::starts_with(opt_key, "tilt_")) {
-                const bool is_slx = cfg.opt_string("printer_model") == "SLX";
                 if (is_slx && boost::ends_with(opt_key, "_slx")) {
                     enum_names = tilt_enum_names_slx;
                     opt_key.resize(opt_key.size() - 4); // trim the suffix
@@ -175,7 +182,8 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
     for (auto& param : m)
         root.put(param.first, param.second );
 
-    root.put("version", "1");
+    root.put("surface_area", get_print_area(print));
+    root.put("version", is_slx ? "2" : "1");
     root.add_child("exposure_profile", profile_node);
 
     // Boost confirms its implementation has no 100% conformance to JSON standard. 

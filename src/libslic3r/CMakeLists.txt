@@ -454,7 +454,9 @@ set(SLIC3R_SOURCES
     SLA/BranchingTreeSLA.hpp
     SLA/BranchingTreeSLA.cpp
     SLA/ZCorrection.hpp
-    SLA/ZCorrection.cpp    
+    SLA/ZCorrection.cpp
+    SLA/Workflows.hpp
+    SLA/Workflows.cpp
     SLA/SupportIslands/EvaluateNeighbor.cpp
     SLA/SupportIslands/EvaluateNeighbor.hpp
     SLA/SupportIslands/ExpandNeighbor.cpp

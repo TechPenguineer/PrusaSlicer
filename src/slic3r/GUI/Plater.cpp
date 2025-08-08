@@ -80,6 +80,7 @@
 #include "libslic3r/ModelProcessing.hpp"
 #include "libslic3r/FileReader.hpp"
 #include "libslic3r/MultipleBeds.hpp"
+#include "libslic3r/SLA/Workflows.hpp"
 
 // For stl export
 #include "libslic3r/CSGMesh/ModelToCSGMesh.hpp"
@@ -273,6 +274,7 @@ struct Plater::priv
     Slic3r::Model               model;
     PrinterTechnology           printer_technology = ptFFF;
     std::vector<Slic3r::GCodeProcessorResult> gcode_results;
+    std::unique_ptr<sla::WorkflowManager> workflow_manager;
 
     // GUI elements
     wxSizer* panel_sizer{ nullptr };
@@ -653,6 +655,8 @@ Plater::priv::priv(Plater* q, MainFrame* main_frame)
 
 void Plater::priv::init()
 {
+    workflow_manager = std::make_unique<sla::WorkflowManager>();
+
     for (int i = 0; i < s_multiple_beds.get_max_beds(); ++i) {
         gcode_results.emplace_back();
         fff_prints.emplace_back(std::make_unique<Print>());
@@ -7749,6 +7753,11 @@ std::vector<std::unique_ptr<Print>>& Plater::get_fff_prints()
 const std::vector<GCodeProcessorResult>& Plater::get_gcode_results() const
 {
     return p->gcode_results;
+}
+
+const sla::WorkflowManager& Plater::get_workflow_manager() const
+{
+    return *p->workflow_manager;
 }
 
 wxMenu* Plater::object_menu()           { return p->menus.object_menu();            }

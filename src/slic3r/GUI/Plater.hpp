@@ -55,6 +55,8 @@ namespace UndoRedo {
     struct Snapshot;
 }
 
+namespace sla { class WorkflowManager; }
+
 namespace GUI {
 
 wxDECLARE_EVENT(EVT_SCHEDULE_BACKGROUND_PROCESS, SimpleEvent);
@@ -302,6 +304,8 @@ public:
     GLCanvas3D* canvas3D();
     const GLCanvas3D * canvas3D() const;
     GLCanvas3D* get_current_canvas3D();
+
+    const sla::WorkflowManager& get_workflow_manager() const;
 
     void render_sliders(GLCanvas3D& canvas);
 

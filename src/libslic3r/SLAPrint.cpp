@@ -301,6 +301,11 @@ SLAPrint::ApplyStatus SLAPrint::apply(const Model &model, DynamicPrintConfig con
     if (! material_diff.empty())
         update_apply_status(this->invalidate_state_by_config_options(material_diff, invalidate_all_model_objects));
 
+    if (model.sla_workflow_uuid != m_model.sla_workflow_uuid) {
+        update_apply_status(this->invalidate_step(slapsMergeSlicesAndEval));
+        m_model.sla_workflow_uuid = model.sla_workflow_uuid;
+    }
+
     // Multiple beds hack: We currently use one SLAPrint for all beds. It must be invalidated
     // when beds are switched. If not done explicitly, supports from previously sliced object
     // might end up with wrong offset.

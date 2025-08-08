@@ -182,6 +182,8 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
     for (auto& param : m)
         root.put(param.first, param.second );
 
+    if (is_slx && ! print.model().sla_workflow_uuid.empty())
+        root.put("workflow_uuid", print.model().sla_workflow_uuid);
     root.put("surface_area", get_print_area(print));
     root.put("version", is_slx ? "2" : "1");
     root.add_child("exposure_profile", profile_node);

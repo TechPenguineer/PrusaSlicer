@@ -25,6 +25,7 @@
 #include <wx/sizer.h>
 
 #include "libslic3r/Preset.hpp"
+#include "libslic3r/SLA/Workflows.hpp"
 #include "GUI.hpp"
 #include "Event.hpp"
 
@@ -73,6 +74,7 @@ class Sidebar : public wxPanel
     PlaterPresetComboBox*               m_combo_sla_material{ nullptr };
     PlaterPresetComboBox*               m_combo_printer     { nullptr };
     BitmapComboBox*                     m_workflow          { nullptr };
+    std::vector<sla::Workflow>          m_available_workflows;
     std::vector<PlaterPresetComboBox*>  m_combos_filament;
 
     ObjectList*     m_object_list               { nullptr };
@@ -159,8 +161,8 @@ public:
     void update_presets(Preset::Type preset_type);
     void update_printer_presets_combobox();
     void update_all_filament_comboboxes();
+    void update_workflow_combobox_if_needed();
 
-    void set_workflow_combobox(const std::vector<std::string>& items, int selection);
     void on_workflow_changed();
 
     void msw_rescale();

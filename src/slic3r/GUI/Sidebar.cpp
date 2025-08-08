@@ -46,6 +46,7 @@
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/PresetBundle.hpp"
 #include "libslic3r/ModelProcessing.hpp"
+#include "libslic3r/SLA/Workflows.hpp"
 
 #include "GUI.hpp"
 #include "GUI_App.hpp"
@@ -632,6 +633,41 @@ void Sidebar::update_all_filament_comboboxes()
         cb->update();
 }
 
+void Sidebar::update_workflow_combobox_if_needed()
+{
+    PresetBundle &preset_bundle = *wxGetApp().preset_bundle;
+    const Tab *tab = wxGetApp().get_tab(Preset::TYPE_PRINTER);
+    if (tab->is_prusa_printer() && tab->printer_model() == "SLX") {
+        // lmTODO -> set correct items and selection
+
+        std::string material_uuid;
+        if (const DynamicPrintConfig& config = preset_bundle.sla_materials.get_edited_preset().config; config.has("material_uuid")) {
+            material_uuid = config.opt_string("material_uuid");
+        } else {
+            // THIS IS JUST FOR TESTING !!!
+            std::vector<std::string> mocked_mat_uuids = {"e746dc19-892e-4d31-ae6b-35ce6e3609f9", "045c6f71-e679-4021-a074-3df5ce5d393e", "0b20c86a-e0ec-4185-a94e-aa928c437dcb", "218c5307-657e-4123-b03d-6867f57f18ab"};
+            material_uuid = mocked_mat_uuids[rand() % mocked_mat_uuids.size()];
+        }
+
+        // Get sorted list of available workflows, including "no workflow" item with empty uuid.
+        m_available_workflows = m_plater->get_workflow_manager().workflows_for_material_sorted(material_uuid);
+
+        // Now actually update the combobox.
+        m_workflow->Clear();
+        int default_id = 0;
+        int id = 0;
+        for (size_t i=0; i<m_available_workflows.size(); ++i) {
+            m_workflow->Append(from_u8(m_available_workflows[i].name), *get_bmp_bundle("sla_printer"));
+            if (m_available_workflows[i].is_default)
+                default_id = id;
+            ++id;
+        }
+        m_workflow->Select(default_id);
+
+        m_plater->model().sla_workflow_uuid = m_available_workflows[default_id].uuid;
+    }
+}
+
 void Sidebar::update_all_preset_comboboxes()
 {
     PresetBundle &preset_bundle = *wxGetApp().preset_bundle;
@@ -644,12 +680,7 @@ void Sidebar::update_all_preset_comboboxes()
         m_combo_sla_print->update();
         m_combo_sla_material->update();
 
-        // Update workflow combobox if needed
-        const Tab *tab = wxGetApp().get_tab(Preset::TYPE_PRINTER);
-        if (tab->is_prusa_printer() && tab->printer_model() == "SLX") {
-            // lmTODO -> set correct items and selection
-            set_workflow_combobox({"Workflow 1", "Workflow 2", "Workflow 3", "Workflow 4"}, 2);
-        }
+        update_workflow_combobox_if_needed();
     }
     // Update the printer choosers, update the dirty flags.
     m_combo_printer->update();
@@ -694,6 +725,7 @@ void Sidebar::update_presets(Preset::Type preset_type)
 
     case Preset::TYPE_SLA_MATERIAL:
         m_combo_sla_material->update();
+        update_workflow_combobox_if_needed();
         break;
 
     case Preset::TYPE_PRINTER:
@@ -852,30 +884,11 @@ void Sidebar::init_workflow_combo(int margin_5)
 #endif
 }
 
-void Sidebar::set_workflow_combobox(const std::vector<std::string> &items, int selection)
-{
-    m_workflow->Clear();
 
-    for (const std::string &item : items) {
-        m_workflow->Append(from_u8(item), *get_bmp_bundle("sla_printer"));
-    }
-
-    m_workflow->Select(selection);
-}
 
 void Sidebar::on_workflow_changed()
 {
-    int new_selection = m_workflow->GetSelection();
-    wxString selected_string = m_workflow->GetLabel();
-    MessageDialog(
-        this,
-        format_wxstr(
-            "New selected workflow index is %1% with name %2%", new_selection, selected_string
-        ),
-        "Info", wxOK | wxICON_INFORMATION | wxCENTRE
-    )
-        .ShowModal();
-    // lmTODO
+    m_plater->model().sla_workflow_uuid = m_available_workflows[m_workflow->GetSelection()].uuid;
 }
 
 void Sidebar::msw_rescale()

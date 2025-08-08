@@ -641,13 +641,8 @@ void Sidebar::update_workflow_combobox_if_needed()
         // lmTODO -> set correct items and selection
 
         std::string material_uuid;
-        if (const DynamicPrintConfig& config = preset_bundle.sla_materials.get_edited_preset().config; config.has("material_uuid")) {
+        if (const DynamicPrintConfig& config = preset_bundle.sla_materials.get_edited_preset().config; config.has("material_uuid"))
             material_uuid = config.opt_string("material_uuid");
-        } else {
-            // THIS IS JUST FOR TESTING !!!
-            std::vector<std::string> mocked_mat_uuids = {"e746dc19-892e-4d31-ae6b-35ce6e3609f9", "045c6f71-e679-4021-a074-3df5ce5d393e", "0b20c86a-e0ec-4185-a94e-aa928c437dcb", "218c5307-657e-4123-b03d-6867f57f18ab"};
-            material_uuid = mocked_mat_uuids[rand() % mocked_mat_uuids.size()];
-        }
 
         // Get sorted list of available workflows, including "no workflow" item with empty uuid.
         m_available_workflows = m_plater->get_workflow_manager().workflows_for_material_sorted(material_uuid);

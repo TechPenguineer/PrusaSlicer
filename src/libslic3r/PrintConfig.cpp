@@ -4531,6 +4531,10 @@ void PrintConfigDef::init_sla_params()
     def->min = 0;
     def->set_default_value(new ConfigOptionFloat(0.0));
 
+    def = this->add("material_uuid", coString);
+    def->label = "Material UUID (FOR DEBUGGING ONLY)";
+    def->set_default_value(new ConfigOptionString(""));
+
     def = this->add("faded_layers", coInt);
     def->label = L("Faded layers");
     def->tooltip = L("Number of the layers needed for the exposure time fade from initial exposure time to the exposure time");

@@ -935,6 +935,7 @@ bool SLAPrint::invalidate_state_by_config_options(const std::vector<t_config_opt
         "slow_tilt_time"sv,
         "high_viscosity_tilt_time"sv,
         "bottle_cost"sv,
+        "material_uuid"sv,
         "bottle_volume"sv,
         "bottle_weight"sv,
         "material_density"sv,

@@ -638,6 +638,7 @@ static std::vector<std::string> s_Preset_sla_material_options{
     "material_type",
     "initial_layer_height",
     "bottle_cost",
+    "material_uuid",
     "bottle_volume",
     "bottle_weight",
     "material_density",

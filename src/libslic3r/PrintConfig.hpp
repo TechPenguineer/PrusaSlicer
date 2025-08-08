@@ -1266,6 +1266,7 @@ PRINT_CONFIG_CLASS_DEFINE(
 
     ((ConfigOptionFloat,                       initial_layer_height))
     ((ConfigOptionFloat,                       bottle_cost))
+    ((ConfigOptionString,                      material_uuid))
     ((ConfigOptionFloat,                       bottle_volume))
     ((ConfigOptionFloat,                       bottle_weight))
     ((ConfigOptionFloat,                       material_density))

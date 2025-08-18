@@ -4999,7 +4999,7 @@ void PrintConfigDef::init_sla_tilt_params()
         { "layer3040",  "3040"  },
         { "layer4480",  "4480"  },
         { "layer5920",  "5920"  },
-        { "laye7360",   "7360"  },
+        { "layer7360",  "7360"  },
         { "layer8800",  "8800"  },
         { "layer10240", "10240" },
         { "layer11680", "11680" },

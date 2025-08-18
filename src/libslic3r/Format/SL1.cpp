@@ -98,6 +98,102 @@ static float get_print_area(const SLAPrint &print) {
     return area;
 }
 
+static void serialize_tilt_option_to_json(std::string opt_key, const ConfigOption* opt, bool is_slx, pt::ptree& below_node, pt::ptree& above_node)
+{
+    assert(opt != nullptr);
+
+    const t_config_enum_names& tilt_enum_names  = ConfigOptionEnum< TiltSpeeds>::get_enum_names();
+    const t_config_enum_names& tilt_enum_names_slx  = ConfigOptionEnum< TiltSpeedsSLX>::get_enum_names();
+    const t_config_enum_names& tower_enum_names = ConfigOptionEnum<TowerSpeeds>::get_enum_names();
+
+    switch (opt->type()) {
+    case coFloats: {
+        auto values = static_cast<const ConfigOptionFloats*>(opt);
+        double koef = opt_key == "tower_hop_height" ? 1000000. : 1000.; // export in nm (instead of mm), resp. in ms (instead of s)
+        below_node.put<double>(get_key(opt_key), int(koef * values->get_at(0)));
+        above_node.put<double>(get_key(opt_key), int(koef * values->get_at(1)));
+    }
+    break;
+    case coInts: {
+        auto values = static_cast<const ConfigOptionInts*>(opt);
+        below_node.put<int>(get_key(opt_key), values->get_at(0));
+        above_node.put<int>(get_key(opt_key), values->get_at(1));
+    }
+    break;
+    case coBools: {
+        auto values = static_cast<const ConfigOptionBools*>(opt);
+        below_node.put<bool>(get_key(opt_key), values->get_at(0));
+        above_node.put<bool>(get_key(opt_key), values->get_at(1));
+    }
+    break;
+    case coEnums: {
+
+        t_config_enum_names enum_names;
+        if (opt_key == "tower_speed")
+            enum_names = tower_enum_names;
+        else if (boost::starts_with(opt_key, "tilt_")) {
+            if (is_slx && boost::ends_with(opt_key, "_slx")) {
+                enum_names = tilt_enum_names_slx;
+                opt_key.resize(opt_key.size() - 4); // trim the suffix
+            }
+            else if (! is_slx && ! boost::ends_with(opt_key, "_slx"))
+                enum_names = tilt_enum_names;
+            else
+                return;
+        }
+        else if (opt_key == "dynamic_delay_before_profile")
+            enum_names = ConfigOptionEnum<TiltDynamicDelayBefore>::get_enum_names();
+        else if (opt_key == "dynamic_tilt_up_profile")
+            enum_names = ConfigOptionEnum<TiltDynamicUp>::get_enum_names();
+        else if (opt_key == "dynamic_tilt_down_profile")
+            enum_names = ConfigOptionEnum<TiltDynamicDown>::get_enum_names();
+        else
+            std::terminate();
+
+        auto values = static_cast<const ConfigOptionEnums<TiltSpeeds>*>(opt);
+        below_node.put(get_key(opt_key), enum_names[values->get_at(0)]);
+        above_node.put(get_key(opt_key), enum_names[values->get_at(1)]);
+    }
+    break;
+    case coNone:
+    default:
+        break;
+    }
+}
+
+static pt::ptree get_original_values(const DynamicPrintConfig &cfg, bool is_slx)
+{
+    pt::ptree node;
+    pt::ptree below_node;
+    pt::ptree above_node;
+
+    for (const std::string &opt_key : cfg.keys()) {
+        const ConfigOption* opt = cfg.option(opt_key);
+        assert(opt);
+
+        if (std::find(tilt_options().begin(), tilt_options().end(), opt_key) ==
+            tilt_options().end()) {
+            if (opt->type() == coBool) {
+                node.put(opt_key, cfg.opt_bool(opt_key));
+            }
+            else {
+                node.put(opt_key, opt->serialize());
+            }
+        } else {
+            serialize_tilt_option_to_json(
+                opt_key, opt, is_slx, below_node, above_node
+            );
+        }
+    }
+
+    if (!below_node.empty())
+        node.add_child("below_area_fill", below_node);
+    if (!above_node.empty())
+        node.add_child("above_area_fill", above_node);
+
+    return node;
+}
+
 std::string to_json(const SLAPrint& print, const ConfMap &m)
 {
     const auto& cfg = print.full_print_config();
@@ -106,68 +202,8 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
     pt::ptree below_node;
     pt::ptree above_node;
 
-    const t_config_enum_names& tilt_enum_names  = ConfigOptionEnum< TiltSpeeds>::get_enum_names();
-    const t_config_enum_names& tilt_enum_names_slx  = ConfigOptionEnum< TiltSpeedsSLX>::get_enum_names();
-    const t_config_enum_names& tower_enum_names = ConfigOptionEnum<TowerSpeeds>::get_enum_names();
-
-    for (std::string opt_key : tilt_options()) {
-        const ConfigOption* opt = cfg.option(opt_key);
-        assert(opt != nullptr);
-
-        switch (opt->type()) {
-        case coFloats: {
-            auto values = static_cast<const ConfigOptionFloats*>(opt);
-            double koef = opt_key == "tower_hop_height" ? 1000000. : 1000.; // export in nm (instead of mm), resp. in ms (instead of s)
-            below_node.put<double>(get_key(opt_key), int(koef * values->get_at(0)));
-            above_node.put<double>(get_key(opt_key), int(koef * values->get_at(1)));
-        }
-        break;
-        case coInts: {
-            auto values = static_cast<const ConfigOptionInts*>(opt);
-            below_node.put<int>(get_key(opt_key), values->get_at(0));
-            above_node.put<int>(get_key(opt_key), values->get_at(1));
-        }
-        break;
-        case coBools: {
-            auto values = static_cast<const ConfigOptionBools*>(opt);
-            below_node.put<bool>(get_key(opt_key), values->get_at(0));
-            above_node.put<bool>(get_key(opt_key), values->get_at(1));
-        }
-        break;
-        case coEnums: {
-
-            t_config_enum_names enum_names;
-            if (opt_key == "tower_speed")
-                enum_names = tower_enum_names;
-            else if (boost::starts_with(opt_key, "tilt_")) {
-                if (is_slx && boost::ends_with(opt_key, "_slx")) {
-                    enum_names = tilt_enum_names_slx;
-                    opt_key.resize(opt_key.size() - 4); // trim the suffix
-                }
-                else if (! is_slx && ! boost::ends_with(opt_key, "_slx"))
-                    enum_names = tilt_enum_names;
-                else
-                    continue;
-            }
-            else if (opt_key == "dynamic_delay_before_profile")
-                enum_names = ConfigOptionEnum<TiltDynamicDelayBefore>::get_enum_names();
-            else if (opt_key == "dynamic_tilt_up_profile")
-                enum_names = ConfigOptionEnum<TiltDynamicUp>::get_enum_names();
-            else if (opt_key == "dynamic_tilt_down_profile")
-                enum_names = ConfigOptionEnum<TiltDynamicDown>::get_enum_names();
-            else
-                std::terminate();
-
-
-            auto values = static_cast<const ConfigOptionEnums<TiltSpeeds>*>(opt);
-            below_node.put(get_key(opt_key), enum_names[values->get_at(0)]);
-            above_node.put(get_key(opt_key), enum_names[values->get_at(1)]);
-        }
-        break;
-        case coNone:
-        default:
-            break;
-        }
+    for (const std::string& opt_key : tilt_options()) {
+        serialize_tilt_option_to_json(opt_key, cfg.option(opt_key), is_slx, below_node, above_node);
     }
 
     pt::ptree profile_node;
@@ -193,10 +229,25 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
     root.put("version", is_slx ? "2" : "1");
     root.add_child("exposure_profile", profile_node);
 
+    root.add_child("original_values", get_original_values(print.original_config(), is_slx));
+
     // Boost confirms its implementation has no 100% conformance to JSON standard. 
     // In the boost libraries, boost will always serialize each value as string and parse all values to a string equivalent.
     // so, post-prosess output
-    return write_json_with_post_process(root);
+    std::string result = write_json_with_post_process(root);
+
+    // Note: boost::property_tree cannot represent an empty JSON object {}.
+    // It only knows “nodes with a value” and “nodes with children.”
+    // So, just replace it manually
+    boost::replace_all(result, "\"original_values\": \"\"", "\"original_values\": {}");
+
+    // change options keys to consistency
+    boost::replace_all(result, "layer_height", "layerHeight");
+    boost::replace_all(result, "exposure_time", "expTime");
+    boost::replace_all(result, "initial_exposure_time", "expTimeFirst");
+    boost::replace_all(result, "material_print_speed", "expUserProfile");
+
+    return result;
 }
 
 std::string get_cfg_value(const DynamicPrintConfig &cfg, const std::string &key)

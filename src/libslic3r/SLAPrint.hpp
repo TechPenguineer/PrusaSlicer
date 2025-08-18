@@ -496,8 +496,15 @@ public:
     bool                empty() const override { return m_objects.empty(); }
     // List of existing PrintObject IDs, to remove notifications for non-existent IDs.
     std::vector<ObjectID> print_object_ids() const override;
-    ApplyStatus         apply(const Model &model, DynamicPrintConfig config, std::vector<std::string> *warnings = nullptr) override;
-    void                set_task(const TaskParams &params) override { PrintBaseWithState<SLAPrintStep, slapsCount>::set_task_impl(params, m_objects); }
+    ApplyStatus apply(
+        const Model &model,
+        DynamicPrintConfig config,
+        std::vector<std::string> *warnings = nullptr,
+        const DynamicPrintConfig *original_config = nullptr
+    ) override;
+    void set_task(const TaskParams &params) override {
+        PrintBaseWithState<SLAPrintStep, slapsCount>::set_task_impl(params, m_objects);
+    }
     void                process() override;
     void                finalize() override { PrintBaseWithState<SLAPrintStep, slapsCount>::finalize_impl(m_objects); }
     void                cleanup() override {}
@@ -524,6 +531,7 @@ public:
     const SLAPrinterConfig&     printer_config() const { return m_printer_config; }
     const SLAMaterialConfig&    material_config() const { return m_material_config; }
     const SLAPrintObjectConfig& default_object_config() const { return m_default_object_config; }
+    const DynamicPrintConfig&   original_config() const { return m_original_config; }
 
     // Extracted value from the configuration objects
     Vec3d                       relative_correction() const;
@@ -603,6 +611,9 @@ private:
     SLAPrinterConfig                m_printer_config;
     SLAMaterialConfig               m_material_config;
     SLAPrintObjectConfig            m_default_object_config;
+
+    // Contains original values [values from PresetCollection::selected_preset()], which were changed in PresetCollection::edited_preset()
+    DynamicPrintConfig              m_original_config;
 
     PrintObjects                    m_objects;
 

@@ -2446,8 +2446,9 @@ unsigned int Plater::priv::update_background_process(bool force_validation, bool
             apply_statuses[s_multiple_beds.get_active_bed()] = invalidated;
         });
     } else if (printer_technology == ptSLA) {
+        DynamicPrintConfig original_config = wxGetApp().preset_bundle->original_config();
         with_single_bed_model_sla(q->model(), s_multiple_beds.get_active_bed(), [&](){
-            invalidated = background_process.apply(q->model(), full_config, &warnings);
+            invalidated = background_process.apply(q->model(), full_config, &warnings, &original_config);
             apply_statuses[0] = invalidated;
         });
     } else {

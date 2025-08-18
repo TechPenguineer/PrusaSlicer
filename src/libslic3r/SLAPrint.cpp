@@ -260,12 +260,19 @@ static t_config_option_keys print_config_diffs(const StaticPrintConfig     &curr
     return print_diff;
 }
 
-
-SLAPrint::ApplyStatus SLAPrint::apply(const Model &model, DynamicPrintConfig config, std::vector<std::string> *warnings)
-{
+SLAPrint::ApplyStatus SLAPrint::apply(
+    const Model &model,
+    DynamicPrintConfig config,
+    std::vector<std::string> *warnings,
+    const DynamicPrintConfig *original_config
+) {
 #ifdef _DEBUG
     check_model_ids_validity(model);
 #endif /* _DEBUG */
+
+    if (original_config) {
+        m_original_config = *original_config;
+    }
 
     // Normalize the config.
     config.option("sla_print_settings_id",        true);

@@ -1147,6 +1147,21 @@ struct ExposureProfile {
         { tsMove8000 , 8000  },
     };
 
+    // map of internal TiltSpeeds to maximum_steprates (usteps/s)
+    // this values was provided in default_tilt_moving_profiles.json by SLA-team
+    std::map<TiltSpeedsSLX, int> tilt_speeds_slx = {
+        { tssLayer160  , 160   },
+        { tssLayer1600 , 1600  },
+        { tssLayer3040 , 3040  },
+        { tssLayer4480 , 4480  },
+        { tssLayer5920 , 5920  },
+        { tssLayer7360 , 7360  },
+        { tssLayer8800 , 8800  },
+        { tssLayer10240, 10240 },
+        { tssLayer11680, 11680 },
+        { tssLayer13120, 13120 },
+    };
+
     int     delay_before_exposure_ms    { 0 };
     int     delay_after_exposure_ms     { 0 };
     int     tilt_down_offset_delay_ms   { 0 };
@@ -1167,7 +1182,7 @@ struct ExposureProfile {
 
     ExposureProfile() {}
 
-    ExposureProfile(const SLAMaterialConfig& config, int opt_id)
+    ExposureProfile(const SLAMaterialConfig& config, int opt_id, bool is_slx)
     {
         delay_before_exposure_ms    = int(1000 * config.delay_before_exposure.get_at(opt_id));
         delay_after_exposure_ms     = int(1000 * config.delay_after_exposure.get_at(opt_id));
@@ -1182,6 +1197,13 @@ struct ExposureProfile {
         tilt_up_cycles              = config.tilt_up_cycles.get_at(opt_id);
         use_tilt                    = config.use_tilt.get_at(opt_id);
         tower_speed                 = tower_speeds.at(static_cast<TowerSpeeds>(config.tower_speed.getInts()[opt_id]));
+        if (is_slx) {
+            tilt_down_initial_speed = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_down_initial_speed_slx.getInts()[opt_id]));
+            tilt_down_finish_speed  = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_down_finish_speed_slx.getInts()[opt_id]));
+            tilt_up_initial_speed   = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_up_initial_speed_slx.getInts()[opt_id]));
+            tilt_up_finish_speed    = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_up_finish_speed_slx.getInts()[opt_id]));
+            return;
+        }
         tilt_down_initial_speed     = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_initial_speed.getInts()[opt_id]));
         tilt_down_finish_speed      = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_finish_speed.getInts()[opt_id]));
         tilt_up_initial_speed       = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_initial_speed.getInts()[opt_id]));
@@ -1279,8 +1301,9 @@ void SLAPrint::Steps::merge_slices_and_eval_stats() {
 
     const int fade_layers_cnt = m_print->m_default_object_config.faded_layers.getInt();// 10 // [3;20]
 
-    ExposureProfile below(material_config, 0);
-    ExposureProfile above(material_config, 1);
+    bool is_slx = printer_config.opt_string("printer_model") == "SLX";
+    ExposureProfile below(material_config, 0, is_slx);
+    ExposureProfile above(material_config, 1, is_slx);
 
     const int           first_slow_layers   = fade_layers_cnt + first_extra_slow_layers;
     const bool          is_prusa_print = SLAPrint::is_prusa_print(printer_config.printer_model);

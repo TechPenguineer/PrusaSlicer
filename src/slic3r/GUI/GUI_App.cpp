@@ -2754,8 +2754,9 @@ wxMenu* GUI_App::get_config_menu(MainFrame* main_frame)
         case ConfigMenuWizard:
             run_wizard(ConfigWizard::RR_USER);
             break;
-        case ConfigMenuUpdateConf: 
-            check_updates(true); 
+        case ConfigMenuUpdateConf:
+            this->plater_->fetch_workflows_file_online_start();
+            check_updates(true);
             break;
         case ConfigMenuUpdateApp:
             app_version_check(true);

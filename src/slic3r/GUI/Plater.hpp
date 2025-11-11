@@ -61,6 +61,7 @@ namespace GUI {
 
 wxDECLARE_EVENT(EVT_SCHEDULE_BACKGROUND_PROCESS, SimpleEvent);
 wxDECLARE_EVENT(EVT_REGENERATE_BED_THUMBNAILS, SimpleEvent);
+wxDECLARE_EVENT(EVT_RELOAD_SLA_WORKFLOWS, SimpleEvent);
 
 class MainFrame;
 class GLCanvas3D;
@@ -195,6 +196,8 @@ public:
     void collapse_sidebar(bool show);
 
     bool is_view3D_layers_editing_enabled() const;
+
+    void fetch_workflows_file_online_start();
 
     // Called after the Preferences dialog is closed and the program settings are saved.
     // Update the UI based on the current preferences.

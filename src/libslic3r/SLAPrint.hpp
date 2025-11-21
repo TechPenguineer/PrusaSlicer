@@ -377,7 +377,8 @@ private:
     {
         sla::SupportableMesh    input; // the input
         std::vector<ExPolygons> support_slices;   // sliced supports
-        TriangleMesh tree_mesh, pad_mesh, full_mesh; // cached artifacts
+        TriangleMesh tree_mesh, pad_mesh; // cached artifacts
+        sla::SupportTreeOutput support_tree_output;
         
         inline SupportData(const TriangleMesh &t)
             : input{t.its, {}, {}}
@@ -389,7 +390,9 @@ private:
         
         void create_support_tree(const sla::JobController &ctl)
         {
-            tree_mesh = TriangleMesh{sla::create_support_tree(input, ctl)};
+            auto output = sla::create_support_tree(input, ctl);
+            tree_mesh = TriangleMesh(std::move(output.first));
+            support_tree_output = std::move(output.second);
         }
 
         void create_pad(const sla::JobController &ctl)

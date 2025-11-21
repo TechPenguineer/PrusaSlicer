@@ -421,6 +421,8 @@ set(SLIC3R_SOURCES
     SLA/Pad.cpp
     SLA/SupportTreeBuilder.hpp
     SLA/SupportTreeMesher.hpp
+    SLA/SupportTreeSlicer.hpp
+    SLA/SupportTreeSlicer.cpp
     SLA/SupportTreeMesher.cpp
     SLA/SupportTreeUtils.hpp
     SLA/SupportTreeUtilsLegacy.hpp

@@ -9,6 +9,7 @@
 #include <libslic3r/Execution/ExecutionTBB.hpp>
 #include <libslic3r/SLA/Pad.hpp>
 #include <libslic3r/SLA/SupportPointGenerator.hpp>
+#include "libslic3r/SLA/SupportTreeSlicer.hpp"
 #include <libslic3r/SLA/ZCorrection.hpp>
 #include <libslic3r/ElephantFootCompensation.hpp>
 #include <libslic3r/CSGMesh/ModelToCSGMesh.hpp>
@@ -940,7 +941,8 @@ void SLAPrint::Steps::generate_pad(SLAPrintObject &po) {
 void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
     auto& sd = po.m_supportdata;
 
-    if(sd) sd->support_slices.clear();
+    if(sd)
+        sd->support_slices = {};
 
     // Don't bother if no supports and no pad is present.
     if (!po.m_config.supports_enable.getBool() && !po.m_config.pad_enable.getBool())
@@ -955,9 +957,23 @@ void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
         ctl.stopcondition = [this]() { return canceled(); };
         ctl.cancelfn = [this]() { throw_if_canceled(); };
 
+    #if 0
         sd->support_slices =
             sla::slice(sd->tree_mesh.its, sd->pad_mesh.its, heights,
                        float(po.config().slice_closing_radius.value), ctl);
+    #else
+        // Calculate the slices using the support tree geometry itself, not the mesh.
+        sd->support_slices =
+            slice_support_tree(sd->support_tree_output, heights);
+        sd->support_tree_output = {}; // Free memory, we no longer need this.
+        std::vector<ExPolygons> pad_slices = sla::slice({}, sd->pad_mesh.its, heights,
+                       float(po.config().slice_closing_radius.value), ctl);
+        sd->support_slices.resize(std::max(sd->support_slices.size(), pad_slices.size()));
+        for (size_t i=0; i<pad_slices.size(); ++i) {
+            for (ExPolygon& exp : pad_slices[i])
+                sd->support_slices[i].emplace_back(std::move(exp));
+        }
+    #endif
     }
 
     for (size_t i = 0; i < sd->support_slices.size() && i < po.m_slice_index.size(); ++i)

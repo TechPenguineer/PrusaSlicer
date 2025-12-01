@@ -56,6 +56,8 @@
 #include "libslic3r/SLA/SupportTree.hpp"
 #include "libslic3r/SLA/SupportTreeStrategies.hpp"
 #include "libslic3r/SLA/SupportIslands/SampleConfigFactory.hpp"
+#include "libslic3r/SLA/PrinterCorrections.hpp"
+#include "libslic3r/SLA/SupportSlicesCache.hpp"
 #include "libslic3r/SLAPrint.hpp"
 #include "libslic3r/TriangleMesh.hpp"
 
@@ -186,46 +188,6 @@ SLAPrint::Steps::Steps(SLAPrint *print)
     , ilhs{scaled(ilhd)}
     , objectstep_scale{(max_objstatus - min_objstatus) / (objcount * 100.0)}
 {}
-
-void SLAPrint::Steps::apply_printer_corrections(SLAPrintObject &po, SliceOrigin o)
-{
-    if (o == soSupport && !po.m_supportdata) return;
-
-    auto faded_lyrs = size_t(po.m_config.faded_layers.getInt());
-    double min_w = m_print->m_printer_config.elefant_foot_min_width.getFloat() / 2.;
-    double start_efc = m_print->m_printer_config.elefant_foot_compensation.getFloat();
-
-    double doffs = m_print->m_printer_config.absolute_correction.getFloat();
-    coord_t clpr_offs = scaled(doffs);
-
-    faded_lyrs = std::min(po.m_slice_index.size(), faded_lyrs);
-    size_t faded_lyrs_efc = std::max(size_t(1), faded_lyrs - 1);
-
-    auto efc = [start_efc, faded_lyrs_efc](size_t pos) {
-        return (faded_lyrs_efc - pos) * start_efc / faded_lyrs_efc;
-    };
-
-    std::vector<ExPolygons> &slices = o == soModel ?
-                                          po.m_model_slices :
-                                          po.m_supportdata->support_slices;
-
-    if (clpr_offs != 0) for (size_t i = 0; i < po.m_slice_index.size(); ++i) {
-        size_t idx = po.m_slice_index[i].get_slice_idx(o);
-        if (idx < slices.size())
-            slices[idx] = offset_ex(slices[idx], float(clpr_offs));
-    }
-
-    if (start_efc > 0.) for (size_t i = 0; i < faded_lyrs; ++i) {
-        size_t idx = po.m_slice_index[i].get_slice_idx(o);
-        if (idx < slices.size())
-            slices[idx] = elephant_foot_compensation(slices[idx], min_w, efc(i));
-    }
-
-    if (o == soModel) { // Z correction applies only to the model slices
-        slices = sla::apply_zcorrection(slices,
-                                        m_print->m_material_config.zcorrection_layers.getInt());
-    }
-}
 
 indexed_triangle_set SLAPrint::Steps::generate_preview_vdb(
     SLAPrintObject &po, SLAPrintObjectStep step)
@@ -635,7 +597,15 @@ void SLAPrint::Steps::slice_model(SLAPrintObject &po)
     }
 
     // We apply the printer correction offset here.
-    apply_printer_corrections(po, soModel);
+    const auto& pc = m_print->m_printer_config;
+    apply_printer_corrections(po.m_model_slices, soModel, po.m_slice_index, po.m_config.faded_layers.getInt(), pc.elefant_foot_min_width.getFloat(),
+        pc.elefant_foot_compensation.getFloat(), pc.absolute_correction.getFloat());
+
+
+
+    // Also apply Z-compensation. That is only done for model (not supports).
+    po.m_model_slices = sla::apply_zcorrection(po.m_model_slices,
+                                        m_print->m_material_config.zcorrection_layers.getInt());
 
     // Prepare data for the support point generator only when supports are enabled
     if (po.m_config.supports_enable.getBool())
@@ -942,7 +912,7 @@ void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
     auto& sd = po.m_supportdata;
 
     if(sd)
-        sd->support_slices = {};
+        sd->support_slices_cache = std::make_unique<sla::SupportSlicesCache>();
 
     // Don't bother if no supports and no pad is present.
     if (!po.m_config.supports_enable.getBool() && !po.m_config.pad_enable.getBool())
@@ -957,29 +927,54 @@ void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
         ctl.stopcondition = [this]() { return canceled(); };
         ctl.cancelfn = [this]() { throw_if_canceled(); };
 
-    #if 0
-        sd->support_slices =
-            sla::slice(sd->tree_mesh.its, sd->pad_mesh.its, heights,
-                       float(po.config().slice_closing_radius.value), ctl);
-    #else
-        // Calculate the slices using the support tree geometry itself, not the mesh.
-        sd->support_slices =
-            slice_support_tree(sd->support_tree_output, heights);
-        sd->support_tree_output = {}; // Free memory, we no longer need this.
+        
         std::vector<ExPolygons> pad_slices = sla::slice({}, sd->pad_mesh.its, heights,
                        float(po.config().slice_closing_radius.value), ctl);
-        sd->support_slices.resize(std::max(sd->support_slices.size(), pad_slices.size()));
-        for (size_t i=0; i<pad_slices.size(); ++i) {
-            for (ExPolygon& exp : pad_slices[i])
-                sd->support_slices[i].emplace_back(std::move(exp));
-        }
-    #endif
+
+        for (size_t i = 0; i < heights.size() && i < po.m_slice_index.size(); ++i)
+            po.m_slice_index[i].set_support_slice_idx(po, i);
+        
+        // DEBUGGING: This is just to have a reference to verify the cache works.
+        //std::vector<ExPolygons> support_slices_temp = slice_support_tree(sd->support_tree_output, heights);
+        //std::vector<ExPolygons> support_slices = pad_slices;
+        //support_slices.resize(std::max(support_slices.size(), support_slices_temp.size()));
+        //for (size_t i=0; i<support_slices_temp.size(); ++i) {
+        //    for (ExPolygon& exp : support_slices_temp[i])
+        //        support_slices[i].emplace_back(std::move(exp));
+        //}
+        //apply_printer_corrections(support_slices, SliceOrigin::soSupport, po.m_slice_index, po.m_config.faded_layers.getInt(),
+        //    m_print->m_printer_config.elefant_foot_min_width.getFloat(), m_print->m_printer_config.elefant_foot_compensation.getFloat(), m_print->m_printer_config.absolute_correction.getFloat());
+
+
+        // To save memory, the cache only slices and saves the slices at the bottom -
+        // containing pad and requiring elephant foot compensation. It will calculate
+        // all other slices on the fly. The cache takes care of XY compensation.
+        sd->support_slices_cache = std::make_unique<sla::SupportSlicesCache>(
+            std::move(sd->support_tree_output),
+            std::move(pad_slices),
+            heights,
+            po.m_slice_index,
+            po.m_config.faded_layers.getInt(),
+            m_print->m_printer_config.elefant_foot_min_width.getFloat(),
+            m_print->m_printer_config.elefant_foot_compensation.getFloat(),
+            m_print->m_printer_config.absolute_correction.getFloat()
+        );
+        sd->support_tree_output = {}; // moved from
+        pad_slices = {};
+
+
+        // DEBUGGING: Check that slices from cache are same as reference.
+        //bool ok = true;
+        //for (size_t i=0; i<support_slices.size() ;++i)
+        //    if (support_slices[i] != sd->support_slices_cache->calculate_support_slice(i))
+        //         ok = false;
+        // if (ok)
+        //     BOOST_LOG_TRIVIAL(error) << "Slices match !!!";
+        // else {
+        //     BOOST_LOG_TRIVIAL(error) << "Slices DO NOT match !!!";
+        //     std::terminate();
+        // }
     }
-
-    for (size_t i = 0; i < sd->support_slices.size() && i < po.m_slice_index.size(); ++i)
-        po.m_slice_index[i].set_support_slice_idx(po, i);
-
-    apply_printer_corrections(po, soSupport);
 
     // Using RELOAD_SLA_PREVIEW to tell the Plater to pass the update
     // status to the 3D preview to load the SLA slices.
@@ -992,8 +987,8 @@ static ExPolygons get_all_polygons(const SliceRecord& record, SliceOrigin o)
     if (!record.print_obj()) return {};
 
     ExPolygons polygons;
-    auto &input_polygons = record.get_slice(o);
-    auto &instances = record.print_obj()->instances();
+    const auto& input_polygons = record.get_slice(o);
+    const auto &instances = record.print_obj()->instances();
     bool is_lefthanded = record.print_obj()->is_left_handed();
     polygons.reserve(input_polygons.size() * instances.size());
 

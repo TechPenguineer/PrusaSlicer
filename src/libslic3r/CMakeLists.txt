@@ -419,10 +419,14 @@ set(SLIC3R_SOURCES
     ${OpenVDBUtils_SOURCES}
     SLA/Pad.hpp
     SLA/Pad.cpp
+    SLA/PrinterCorrections.hpp
+    SLA/PrinterCorrections.cpp
     SLA/SupportTreeBuilder.hpp
     SLA/SupportTreeMesher.hpp
     SLA/SupportTreeSlicer.hpp
     SLA/SupportTreeSlicer.cpp
+    SLA/SupportSlicesCache.hpp
+    SLA/SupportSlicesCache.cpp
     SLA/SupportTreeMesher.cpp
     SLA/SupportTreeUtils.hpp
     SLA/SupportTreeUtilsLegacy.hpp

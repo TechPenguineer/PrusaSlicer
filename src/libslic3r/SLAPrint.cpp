@@ -10,6 +10,7 @@
 #include "format.hpp"
 #include "StaticMap.hpp"
 #include "libslic3r/ClipperUtils.hpp"
+#include "libslic3r/SLA/SupportSlicesCache.hpp"
 
 #include "Format/SLAArchiveFormatRegistry.hpp"
 
@@ -1003,6 +1004,14 @@ bool SLAPrint::is_step_done(SLAPrintObjectStep step) const
     return true;
 }
 
+SLAPrintObject::SupportData::SupportData(const TriangleMesh &t)
+    : input{t.its, {}, {}}
+{}
+
+SLAPrintObject::SupportData::SupportData(const indexed_triangle_set &t)
+    : input{t, {}, {}}
+{}
+
 SLAPrintObject::SLAPrintObject(SLAPrint *print, ModelObject *model_object)
     : Inherited(print, model_object)
 {}
@@ -1206,23 +1215,20 @@ const std::vector<sla::SupportPoint>& SLAPrintObject::get_support_points() const
     return m_supportdata? m_supportdata->input.pts : EMPTY_SUPPORT_POINTS;
 }
 
-const std::vector<ExPolygons> &SLAPrintObject::get_support_slices() const
-{
-    // assert(is_step_done(slaposSliceSupports));
-    if (!m_supportdata) return EMPTY_SLICES;
-    return m_supportdata->support_slices;
-}
-
-const ExPolygons &SliceRecord::get_slice(SliceOrigin o) const
+ExPolygons SliceRecord::get_slice(SliceOrigin o) const
 {
     size_t idx = o == soModel ? m_model_slices_idx : m_support_slices_idx;
 
     if(m_po == nullptr) return EMPTY_SLICE;
 
-    const std::vector<ExPolygons>& v = o == soModel? m_po->get_model_slices() :
-                                                     m_po->get_support_slices();
-
-    return idx >= v.size() ? EMPTY_SLICE : v[idx];
+    if (o == SliceOrigin::soModel) {
+        const std::vector<ExPolygons>& v = m_po->get_model_slices();
+        return idx >= v.size() ? EMPTY_SLICE : v[idx];
+    } else {
+        if (! m_po->m_supportdata || ! m_po->m_supportdata->support_slices_cache)
+            return EMPTY_SLICE;
+        return m_po->m_supportdata->support_slices_cache->calculate_support_slice(idx);
+    }
 }
 
 const TriangleMesh& SLAPrintObject::support_mesh() const
@@ -1255,7 +1261,11 @@ double SLAPrintObject::surface_area_estimate() const
             if (! is_step_done(slaposSupportTree) || ! is_step_done(slaposPad) || ! m_supportdata)
                 continue;
         }
-        const std::vector<ExPolygons>& slices = (a==0 ? m_supportdata->support_slices : m_model_slices);
+
+        // FIXME BEFORE MERGING: Find a way to calculate supports area.
+        if (a == 0)
+            continue;
+        const std::vector<ExPolygons>& slices = (/*a==0 ? m_supportdata->support_slices : */m_model_slices);
         if (slices.empty())
             continue;
 

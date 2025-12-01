@@ -84,6 +84,10 @@ enum SliceOrigin { soSupport, soModel };
 
 namespace Slic3r {
 
+namespace sla {
+    class SupportSlicesCache;
+}
+
 // Each sla object step can hold a collection of csg operations on the
 // sla model to be sliced. Currently, Assembly step adds negative and positive
 // volumes, hollowing adds the negative interior, drilling adds the hole cylinders.
@@ -222,7 +226,7 @@ public:
             m_po = &po; m_support_slices_idx = id;
         }
 
-        const ExPolygons& get_slice(SliceOrigin o) const;
+        ExPolygons        get_slice(SliceOrigin o) const;
         size_t            get_slice_idx(SliceOrigin o) const
         {
             return o == soModel ? m_model_slices_idx : m_support_slices_idx;
@@ -285,7 +289,6 @@ private:
     }
 
     const std::vector<ExPolygons>& get_model_slices() const { return m_model_slices; }
-    const std::vector<ExPolygons>& get_support_slices() const;
 
 public:
 
@@ -376,17 +379,16 @@ private:
     struct SupportData
     {
         sla::SupportableMesh    input; // the input
-        std::vector<ExPolygons> support_slices;   // sliced supports
+
+        std::unique_ptr<sla::SupportSlicesCache> support_slices_cache;
+
+
         TriangleMesh tree_mesh, pad_mesh; // cached artifacts
         sla::SupportTreeOutput support_tree_output;
         
-        inline SupportData(const TriangleMesh &t)
-            : input{t.its, {}, {}}
-        {}
+        explicit SupportData(const TriangleMesh &t);
 
-        inline SupportData(const indexed_triangle_set &t)
-            : input{t, {}, {}}
-        {}
+        explicit SupportData(const indexed_triangle_set &t);
         
         void create_support_tree(const sla::JobController &ctl)
         {

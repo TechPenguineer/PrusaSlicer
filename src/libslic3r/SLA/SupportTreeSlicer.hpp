@@ -7,7 +7,7 @@
 namespace Slic3r {
 namespace sla {
 
-ExPolygons slice_support_tree(const sla::SupportTreeOutput& output, float height);
+ExPolygons slice_support_tree_at_height(const sla::SupportTreeOutput& output, float height);
 
 std::vector<ExPolygons> slice_support_tree(
     const sla::SupportTreeOutput& output,

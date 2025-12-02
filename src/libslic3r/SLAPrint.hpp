@@ -559,14 +559,7 @@ public:
         // The collection of slice records for the current level.
         std::vector<std::reference_wrapper<const SliceRecord>> m_slices;
 
-        ExPolygons m_transformed_slices;
-
-    public:
-        void set_transformed_slices(ExPolygons&& slices)
-        {
-            m_transformed_slices = std::move(slices);
-        }
-        
+    public:       
         explicit PrintLayer(coord_t lvl) : m_level(lvl) {}
 
         // for being sorted in their container (see m_printer_input)
@@ -579,10 +572,6 @@ public:
         coord_t level() const { return m_level; }
 
         auto slices() const -> const decltype (m_slices)& { return m_slices; }
-
-        const ExPolygons & transformed_slices() const {
-            return m_transformed_slices;
-        }
     };
 
     // The aggregated and leveled print records from various objects.

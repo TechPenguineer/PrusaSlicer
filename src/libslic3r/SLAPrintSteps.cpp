@@ -1386,13 +1386,12 @@ struct SLALayerInfo {
 
 
 // Going to parallel:
-static void printlayerfn(const SLAPrint& print, std::vector<SLAPrint::PrintLayer>& printer_input, size_t layer_idx, std::vector<SLALayerInfo>& layers_info)
+static ExPolygons printlayerfn(const SLAPrint& print, size_t layer_idx, std::vector<SLALayerInfo>& layers_info)
 {
-    SLAPrint::PrintLayer &layer = printer_input[layer_idx];
-
-    auto& slicerecord_references = layer.slices();
-
-    if(slicerecord_references.empty()) return;
+    const SLAPrint::PrintLayer& layer = print.print_layers()[layer_idx];
+    const auto& slicerecord_references = layer.slices();
+    if(slicerecord_references.empty())
+        return ExPolygons{};
 
     // Layer height should match for all object slices for a given level.
     const auto l_height = double(slicerecord_references.front().get().layer_height());
@@ -1438,13 +1437,13 @@ static void printlayerfn(const SLAPrint& print, std::vector<SLAPrint::PrintLayer
     for(ExPolygon& poly : model_polygons) trslices.emplace_back(std::move(poly));
     for(ExPolygon& poly : supports_polygons) trslices.emplace_back(std::move(poly));
 
-    layer.set_transformed_slices(union_ex(trslices));
-
     const auto [layer_time, is_fast_layer] = calculate_layer_time(print.printer_config(), print.material_config(),
         print.default_object_config(), layer_idx, l_height, layer_area);
 
     // Collect values for this layer.
     layers_info[layer_idx] = SLALayerInfo{layer_time, layer_area * SCALING_FACTOR * SCALING_FACTOR, is_fast_layer, models_volume, supports_volume};
+
+    return union_ex(trslices);
 };
 
 
@@ -1478,29 +1477,8 @@ static SLAPrintStatistics create_sla_statistics(const std::vector<SLALayerInfo>&
 
 // Merging the slices from all the print objects into one slice grid and
 // calculating print statistics from the merge result.
-void SLAPrint::Steps::merge_slices_and_eval_stats() {
-
-    initialize_printer_input();    
-    std::vector<PrintLayer>& printer_input    = m_print->m_printer_input;
-
-
-    std::vector<SLALayerInfo> layers_info;
-    layers_info.resize(printer_input.size());
-
-    
-
-    // sequential version for debugging:
-    //for(size_t i = 0; i < printer_input.size(); ++i) printlayerfn(*m_print, printer_input, i, layers_info);
-
-    tbb::parallel_for(tbb::blocked_range(size_t(0), printer_input.size()),
-        [this, &printer_input, &layers_info](const auto &range) {
-            for (size_t i=range.begin(); i<range.end(); ++i)
-                printlayerfn(*m_print, printer_input, i, layers_info);
-        });
-
-    bool is_prusa_print = SLAPrint::is_prusa_print(m_print->printer_config().printer_model);
-    m_print->m_print_statistics = create_sla_statistics(layers_info, is_prusa_print);
-
+void SLAPrint::Steps::merge_slices_and_eval_stats()
+{
     report_status(-2, "", SlicingStatus::RELOAD_SLA_PREVIEW);
 }
 
@@ -1519,20 +1497,28 @@ void SLAPrint::Steps::rasterize()
     // pst: previous state
     double pst = current_status();
 
-    double increment = (slot * sd) / m_print->m_printer_input.size();
+    initialize_printer_input();
+    std::vector<PrintLayer>& printer_input = m_print->m_printer_input;
+
+    std::vector<SLALayerInfo> layers_info;
+    layers_info.resize(printer_input.size());
+
+    double increment = (slot * sd) / printer_input.size();
     double dstatus = current_status();
 
     execution::SpinningMutex<ExecutionTBB> slck;
 
     // procedure to process one height level. This will run in parallel
     auto lvlfn =
-        [this, &slck, increment, &dstatus, &pst]
+        [this, &slck, increment, &dstatus, &pst, &layers_info]
         (sla::RasterBase& raster, size_t idx)
     {
         PrintLayer& printlayer = m_print->m_printer_input[idx];
         if(canceled()) return;
 
-        for (const ExPolygon& poly : printlayer.transformed_slices())
+        ExPolygons polys = printlayerfn(*m_print, idx, layers_info);
+
+        for (const ExPolygon& poly : polys)
             raster.draw(poly);
 
         // Status indication guarded with the spinlock
@@ -1553,6 +1539,10 @@ void SLAPrint::Steps::rasterize()
     // Print all the layers in parallel
     m_print->m_archiver->draw_layers(m_print->m_printer_input.size(), lvlfn,
                                     [this]() { return canceled(); }, ex_tbb);
+
+    // Write statistics collected during rasterization.
+    bool is_prusa_print = SLAPrint::is_prusa_print(m_print->printer_config().printer_model);
+    m_print->m_print_statistics = create_sla_statistics(layers_info, is_prusa_print);
 }
 
 std::string SLAPrint::Steps::label(SLAPrintObjectStep step)

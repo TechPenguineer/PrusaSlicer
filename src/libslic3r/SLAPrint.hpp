@@ -559,14 +559,11 @@ public:
 
         ExPolygons m_transformed_slices;
 
-        template<class Container> void transformed_slices(Container&& c)
-        {
-            m_transformed_slices = std::forward<Container>(c);
-        }
-        
-        friend class SLAPrint::Steps;
-
     public:
+        void set_transformed_slices(ExPolygons&& slices)
+        {
+            m_transformed_slices = std::move(slices);
+        }
         
         explicit PrintLayer(coord_t lvl) : m_level(lvl) {}
 

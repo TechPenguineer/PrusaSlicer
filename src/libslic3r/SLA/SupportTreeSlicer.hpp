@@ -13,6 +13,8 @@ std::vector<ExPolygons> slice_support_tree(
     const sla::SupportTreeOutput& output,
     const std::vector<float>& heights);
 
+double calculate_supports_area(const sla::SupportTreeOutput& output);
+
 }
 }
 #endif

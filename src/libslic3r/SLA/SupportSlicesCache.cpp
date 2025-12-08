@@ -60,5 +60,12 @@ ExPolygons SupportSlicesCache::calculate_support_slice(size_t idx) const
     return slice;
 }
 
+
+
+double SupportSlicesCache::area() const
+{
+    return calculate_supports_area(m_support_tree_output);    
+}
+
 } // namespace sla
 } // namespace Slic3r

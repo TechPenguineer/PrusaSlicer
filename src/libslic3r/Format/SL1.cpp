@@ -94,7 +94,7 @@ namespace pt = boost::property_tree;
 static float get_print_area(const SLAPrint &print) {
     float area = 0.;
     for (const SLAPrintObject* obj : print.objects())
-        area += obj->surface_area_estimate();
+        area += obj->surface_area_estimate() * double(obj->instances().size());
     return area;
 }
 

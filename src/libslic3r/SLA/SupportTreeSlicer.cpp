@@ -9,7 +9,7 @@
 
 namespace Slic3r {
 namespace sla {
-
+    
 namespace {
 
 constexpr int steps = 36;
@@ -284,6 +284,7 @@ ExPolygons slice_support_tree_at_height(const sla::SupportTreeOutput& output, fl
             if (std::optional<Polygon> slice = slice_head(head, height); slice)
                 out.emplace_back(std::move(*slice));
     }
+
     return out;
 }
 
@@ -318,6 +319,63 @@ std::vector<ExPolygons> slice_support_tree(
     });
 #endif
     return support_slices;
+}
+
+
+
+static double cone_side_area(double r1, double r2, double h)
+{
+    return M_PI*(r1+r2) * std::sqrt(h*h - std::pow(r1-r2, 2.));
+}
+
+static double cone_area(double r1, double r2, double h)
+{
+    return M_PI*r1*r1 + M_PI*r2*r2 + cone_side_area(r1, r2, h);
+}
+
+static double cylinder_side_area(double r, double h)
+{
+    return 2.*M_PI*r*h;
+}
+
+static double sphere_area(double r)
+{
+    return 4.*M_PI*r*r;
+}
+
+static double head_area(const Head& head)
+{
+    double area = 0.;
+    const Vec3d c1 = head.pos + head.dir * (head.r_back_mm + 2 * head.r_pin_mm + head.width_mm - head.penetration_mm);
+    const Vec3d c2 = head.pos + head.dir * (head.r_pin_mm - head.penetration_mm);
+    //area += sphere_area(head.r_back_mm);
+    //area += sphere_area(head.r_pin_mm);
+    area += cone_area(head.r_back_mm, head.r_pin_mm, (c2-c1).norm());
+    return area;
+}
+
+double calculate_supports_area(const sla::SupportTreeOutput& output)
+{
+    double area = 0.;
+    for (const Pillar& p : output.pillars)
+        area += cone_side_area(p.r_start, p.r_end, p.height);
+    for (const Pedestal& p : output.pedestals)
+        area += cone_side_area(p.r_bottom, p.r_top, p.height);
+    for (const Junction& j : output.junctions) {
+        // Do not count junctions. The are usually only partially visible, and we
+        // overestimate some of the others.
+    }
+    for (const Bridge& b : output.bridges)
+        area += cylinder_side_area(b.r, (b.endp - b.startp).norm());
+    for (const Bridge& b : output.crossbridges)
+        area += cylinder_side_area(b.r, (b.endp - b.startp).norm());
+    for (const DiffBridge& b : output.diffbridges)
+        area += cone_side_area(b.r, b.end_r, (b.startp - b.endp).norm());
+    for (const Head& head : output.heads)
+        area += head_area(head);
+    for (const Anchor& head : output.anchors)
+        area += head_area(head);
+    return area;
 }
 
 

@@ -26,6 +26,9 @@ public:
     );
 
     ExPolygons calculate_support_slice(size_t idx) const;
+    size_t size() const { return m_heights.size(); }
+    bool empty() const { return m_heights.empty(); }
+    double area() const;
 
 private:
     std::vector<ExPolygons> m_support_slices_bottom;

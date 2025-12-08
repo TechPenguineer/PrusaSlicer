@@ -945,7 +945,6 @@ void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
         //apply_printer_corrections(support_slices, SliceOrigin::soSupport, po.m_slice_index, po.m_config.faded_layers.getInt(),
         //    m_print->m_printer_config.elefant_foot_min_width.getFloat(), m_print->m_printer_config.elefant_foot_compensation.getFloat(), m_print->m_printer_config.absolute_correction.getFloat());
 
-
         // To save memory, the cache only slices and saves the slices at the bottom -
         // containing pad and requiring elephant foot compensation. It will calculate
         // all other slices on the fly. The cache takes care of XY compensation.

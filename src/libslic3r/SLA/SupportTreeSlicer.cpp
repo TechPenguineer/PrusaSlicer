@@ -12,8 +12,6 @@ namespace sla {
     
 namespace {
 
-constexpr int steps = 36;
-
 // Beware! The polygon may be empty when x_limit_left and right are provided.
 Polygon create_ellipse(double Cx, double Cy, double a, double b, size_t segments,
     double x_limit_left = std::numeric_limits<double>::lowest(), double x_limit_right = std::numeric_limits<double>::max())
@@ -70,14 +68,14 @@ Polygon create_hyperbola(double Cx, double Cy, double a, double b, size_t segmen
     return hyperbola;
 }
 
-inline std::optional<Polygon> slice_vertical_cylinder(const Vec3d& center, double height, double r, double h)
+inline std::optional<Polygon> slice_vertical_cylinder(const Vec3d& center, double height, double r, double h, int steps)
 {
     if (h >= center.z() && h < center.z() + height)
         return create_ellipse(center.x(), center.y(), r, r, steps);
     return std::nullopt;
 }
 
-inline std::optional<Polygon> slice_vertical_cone(const Vec3d& center, double height, double r1, double r2, double h)
+inline std::optional<Polygon> slice_vertical_cone(const Vec3d& center, double height, double r1, double r2, double h, int steps)
 {
     if (h >= center.z() && h < center.z() + height) {
         float r = (h - center.z()) * (r2 - r1) / height + r1;
@@ -86,7 +84,7 @@ inline std::optional<Polygon> slice_vertical_cone(const Vec3d& center, double he
     return std::nullopt;
 }
 
-inline std::optional<Polygon> slice_sphere(const Vec3d& center, double R, double h)
+inline std::optional<Polygon> slice_sphere(const Vec3d& center, double R, double h, int steps)
 {
     if (h >= center.z() - R && h < center.z() + R) {
         double r = std::sqrt(R * R - std::pow(h - center.z(), 2.f));
@@ -96,14 +94,14 @@ inline std::optional<Polygon> slice_sphere(const Vec3d& center, double R, double
 }
             
 
-inline std::optional<Polygon> slice_cylinder(const Vec3d& center1, const Vec3d& center2, double r, double h)
+inline std::optional<Polygon> slice_cylinder(const Vec3d& center1, const Vec3d& center2, double r, double h, int steps)
 {
     Vec3d top = center1.z() < center2.z() ? center2 : center1;
     Vec3d bottom = center1.z() < center2.z() ? center1 : center2;
     const double alpha = std::asin((top.z() - bottom.z()) / (top - bottom).norm());
 
     if (is_approx(alpha, M_PI_2))
-        return slice_vertical_cylinder(bottom, top.z() - bottom.z(), r, h);
+        return slice_vertical_cylinder(bottom, top.z() - bottom.z(), r, h, steps);
 
 
     assert(alpha >= 0. && alpha < M_PI_2);
@@ -133,7 +131,7 @@ inline std::optional<Polygon> slice_cylinder(const Vec3d& center1, const Vec3d& 
     return std::nullopt;
 }
 
-inline std::optional<Polygon> slice_cone(const Vec3d& center1, const Vec3d& center2, double r1, double r2, double h)
+inline std::optional<Polygon> slice_cone(const Vec3d& center1, const Vec3d& center2, double r1, double r2, double h, int steps)
 {
     Vec3d top = center1.z() < center2.z() ? center2 : center1;
     Vec3d bottom = center1.z() < center2.z() ? center1 : center2;
@@ -141,10 +139,10 @@ inline std::optional<Polygon> slice_cone(const Vec3d& center1, const Vec3d& cent
     double r_bottom = center1.z() < center2.z() ? r1 : r2;
 
     if (is_approx(r_top, r_bottom))
-        return slice_cylinder(bottom, top, r_top, h);
+        return slice_cylinder(bottom, top, r_top, h, steps);
 
     if (is_approx(center1.x(), center2.x()) && is_approx(center1.y(), center2.y()))
-        return slice_vertical_cone(bottom, top.z() - bottom.z(), r_bottom, r_top, h);
+        return slice_vertical_cone(bottom, top.z() - bottom.z(), r_bottom, r_top, h, steps);
 
     if (r_top < r_bottom) {
         // Transform the problem so that r_top >= r_bottom.
@@ -229,16 +227,32 @@ inline std::optional<Polygon> slice_cone(const Vec3d& center1, const Vec3d& cent
 }
 
 
-std::optional<Polygon> slice_head(const Head& head, double h)
+std::optional<Polygon> slice_head(const Head& head, double h, int steps)
 {
     const Vec3d c1 = head.pos + head.dir * (head.r_back_mm + 2 * head.r_pin_mm + head.width_mm - head.penetration_mm);
     const Vec3d c2 = head.pos + head.dir * (head.r_pin_mm - head.penetration_mm);
-    std::optional<Polygon> slice = slice_sphere(c1, head.r_back_mm, h);
-    if (auto next = slice_sphere(c2, head.r_pin_mm, h))
-        slice = slice ? union_(Polygons{*slice}, *next).front() : std::move(*next);
-    if (auto next = slice_cone(c1, c2, head.r_back_mm, head.r_pin_mm, h))
-        slice = slice ? union_(Polygons{*slice}, *next).front() : std::move(*next);
-    return slice;
+    Polygons out(3);
+    if (std::optional<Polygon> s = slice_sphere(c1, head.r_back_mm, h, steps); s)
+        out[0] = std::move(*s);
+    if (std::optional<Polygon> s = slice_sphere(c2, head.r_pin_mm, h, steps); s)
+        out[1] = std::move(*s);
+
+    Vec3d dir = (c2-c1).normalized();
+    double phi = std::asin(head.r_back_mm / (c2-c1).norm());
+    double l1 = head.r_back_mm * std::cos(M_PI_2 - phi);
+    double l2 = head.r_pin_mm * std::cos(M_PI_2 - phi);
+    if (std::optional<Polygon> s = slice_cone(
+        c1 + dir * l1,
+        c2 + dir * l2,
+        head.r_back_mm*std::sin(M_PI_2-phi),
+        head.r_pin_mm*std::sin(M_PI_2-phi),
+        h, steps); s)
+        out[2] = std::move(*s);
+
+    out = union_(out);
+    if (out.empty())
+        return std::nullopt;
+    return out.front();
 }
     
 
@@ -246,42 +260,42 @@ std::optional<Polygon> slice_head(const Head& head, double h)
 
 
 
-ExPolygons slice_support_tree_at_height(const sla::SupportTreeOutput& output, float height)
+ExPolygons slice_support_tree_at_height(const sla::SupportTreeOutput& output, float height, int steps)
 {
     ExPolygons out;
 
     for (const Pillar& p : output.pillars) {
-        if (std::optional<Polygon> slice = slice_vertical_cone(p.endpt, p.height, p.r_start, p.r_end, height))
+        if (std::optional<Polygon> slice = slice_vertical_cone(p.endpt, p.height, p.r_end, p.r_start, height, steps))
             out.emplace_back(std::move(*slice));
     }
     for (const Pedestal& p : output.pedestals) {
-        if (std::optional<Polygon> slice = slice_vertical_cone(p.pos, p.height, p.r_bottom, p.r_top, height))
+        if (std::optional<Polygon> slice = slice_vertical_cone(p.pos, p.height, p.r_bottom, p.r_top, height, steps))
             out.emplace_back(std::move(*slice));
     }
     for (const Junction& j : output.junctions) {
-        if (std::optional<Polygon> slice = slice_sphere(j.pos, j.r, height))
+        if (std::optional<Polygon> slice = slice_sphere(j.pos, j.r, height, steps))
             out.emplace_back(std::move(*slice));
     }
     for (const Bridge& b : output.bridges) {
-        if (std::optional<Polygon> slice = slice_cylinder(b.startp, b.endp, b.r, height))
+        if (std::optional<Polygon> slice = slice_cylinder(b.startp, b.endp, b.r, height, steps))
             out.emplace_back(std::move(*slice));
     }
     for (const Bridge& b : output.crossbridges) {
-        if (std::optional<Polygon> slice = slice_cylinder(b.startp, b.endp, b.r, height))
+        if (std::optional<Polygon> slice = slice_cylinder(b.startp, b.endp, b.r, height, steps))
             out.emplace_back(std::move(*slice));
     }
     for (const DiffBridge& b : output.diffbridges) {
-        if (std::optional<Polygon> slice = slice_cone(b.startp, b.endp, b.r, b.end_r, height))
+        if (std::optional<Polygon> slice = slice_cone(b.startp, b.endp, b.r, b.end_r, height, steps))
             out.emplace_back(std::move(*slice));
     }
     for (const Head& head : output.heads) {
         if (head.is_valid())
-            if (std::optional<Polygon> slice = slice_head(head, height); slice)
+            if (std::optional<Polygon> slice = slice_head(head, height, steps); slice)
                 out.emplace_back(std::move(*slice));
     }
     for (const Anchor& head : output.anchors) {
         if (head.is_valid())
-            if (std::optional<Polygon> slice = slice_head(head, height); slice)
+            if (std::optional<Polygon> slice = slice_head(head, height, steps); slice)
                 out.emplace_back(std::move(*slice));
     }
 
@@ -292,7 +306,8 @@ ExPolygons slice_support_tree_at_height(const sla::SupportTreeOutput& output, fl
 
 std::vector<ExPolygons> slice_support_tree(
     const sla::SupportTreeOutput& output,
-    const std::vector<float>& heights)
+    const std::vector<float>& heights,
+    int steps)
 {
     // The algorithm seems inefficient at first. It iterates through all supports features
     // for every layer. It might be possible to optimize it by some clever sorting and iterating
@@ -307,13 +322,13 @@ std::vector<ExPolygons> slice_support_tree(
     
 #if PARALLEL_SLICING_OF_TREE_SUPPORTS
     tbb::parallel_for(tbb::blocked_range<size_t>(0, heights.size()),
-    [&support_slices, &heights, &output](const tbb::blocked_range<size_t>& range) {
+    [&support_slices, &heights, &output, &steps](const tbb::blocked_range<size_t>& range) {
     for (size_t i = range.begin(); i != range.end(); ++i) {
 #else
     for (size_t i = 0; i != heights.size(); ++i) {
 #endif
         const float h = heights[i];
-        support_slices[i] = slice_support_tree_at_height(output, h);
+        support_slices[i] = slice_support_tree_at_height(output, h, steps);
     }
 #if PARALLEL_SLICING_OF_TREE_SUPPORTS
     });

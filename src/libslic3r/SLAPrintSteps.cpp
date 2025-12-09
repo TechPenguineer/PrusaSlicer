@@ -934,17 +934,6 @@ void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
         for (size_t i = 0; i < heights.size() && i < po.m_slice_index.size(); ++i)
             po.m_slice_index[i].set_support_slice_idx(po, i);
         
-        // DEBUGGING: This is just to have a reference to verify the cache works.
-        //std::vector<ExPolygons> support_slices_temp = slice_support_tree(sd->support_tree_output, heights);
-        //std::vector<ExPolygons> support_slices = pad_slices;
-        //support_slices.resize(std::max(support_slices.size(), support_slices_temp.size()));
-        //for (size_t i=0; i<support_slices_temp.size(); ++i) {
-        //    for (ExPolygon& exp : support_slices_temp[i])
-        //        support_slices[i].emplace_back(std::move(exp));
-        //}
-        //apply_printer_corrections(support_slices, SliceOrigin::soSupport, po.m_slice_index, po.m_config.faded_layers.getInt(),
-        //    m_print->m_printer_config.elefant_foot_min_width.getFloat(), m_print->m_printer_config.elefant_foot_compensation.getFloat(), m_print->m_printer_config.absolute_correction.getFloat());
-
         // To save memory, the cache only slices and saves the slices at the bottom -
         // containing pad and requiring elephant foot compensation. It will calculate
         // all other slices on the fly. The cache takes care of XY compensation.
@@ -960,19 +949,6 @@ void SLAPrint::Steps::slice_supports(SLAPrintObject &po) {
         );
         sd->support_tree_output = {}; // moved from
         pad_slices = {};
-
-
-        // DEBUGGING: Check that slices from cache are same as reference.
-        //bool ok = true;
-        //for (size_t i=0; i<support_slices.size() ;++i)
-        //    if (support_slices[i] != sd->support_slices_cache->calculate_support_slice(i))
-        //         ok = false;
-        // if (ok)
-        //     BOOST_LOG_TRIVIAL(error) << "Slices match !!!";
-        // else {
-        //     BOOST_LOG_TRIVIAL(error) << "Slices DO NOT match !!!";
-        //     std::terminate();
-        // }
     }
 
     // Using RELOAD_SLA_PREVIEW to tell the Plater to pass the update

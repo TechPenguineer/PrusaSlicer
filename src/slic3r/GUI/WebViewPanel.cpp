@@ -22,7 +22,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
+#include <nlohmann/json.hpp>
 #include <regex>
 
 // if set to 1 the fetch() JS function gets override to include JWT in authorization header
@@ -426,7 +426,8 @@ void WebViewPanel::run_script(const wxString& javascript)
     // Remember the script we run in any case, so the next time the user opens
     // the "Run Script" dialog box, it is shown there for convenient updating.
     m_javascript = javascript;
-    BOOST_LOG_TRIVIAL(trace) << "RunScript " << javascript << "\n";
+    // Do not log the script in production - it could contain private data.
+    //BOOST_LOG_TRIVIAL(trace) << "RunScript " << javascript << "\n";
     m_browser->RunScriptAsync(javascript);
 }
 
@@ -1303,10 +1304,11 @@ void PrintablesWebViewPanel::after_on_show(wxShowEvent& evt)
     const std::string access_token = wxGetApp().plater()->get_user_account()->get_access_token();
     if (access_token.empty()) {
         logout(m_next_show_url);
+        m_next_show_url.clear();
     } else {
-        login(access_token, m_next_show_url);
+        login(access_token);
     }
-    m_next_show_url.clear();
+   
 }
 
 void PrintablesWebViewPanel::logout(const std::string& override_url/* = std::string()*/)
@@ -1331,32 +1333,19 @@ void PrintablesWebViewPanel::logout(const std::string& override_url/* = std::str
 #endif // 
        
 }
-void PrintablesWebViewPanel::login(const std::string& access_token, const std::string& override_url/* = std::string()*/)
+void PrintablesWebViewPanel::login(const std::string& access_token)
 {
     if (!m_shown) {
         return;
     }
-    BOOST_LOG_TRIVIAL(debug) << __FUNCTION__;
-    hide_loading_overlay();
+   
     m_styles_defined = false;
-    // We cannot add token to header as when making the first request.
-    // In fact, we shall not do request here, only run scripts.
-    // postMessage accessTokenWillChange -> postMessage accessTokenChange -> window.location.reload();
+    // This is where access token used to be send to printables via script.
+    // Instead we first exchange it for secret token now.
     wxString script = "window.postMessage(JSON.stringify({ event: 'accessTokenWillChange' }))";
     run_script(script);
-
-    script = GUI::format_wxstr("window.postMessage(JSON.stringify({"
-        "event: 'accessTokenChange',"
-        "token: '%1%'"
-        "}));"
-        , access_token);
-    run_script(script);
-    
-    if ( override_url.empty()) {
-        run_script("window.location.reload();");
-    } else {
-        load_url(GUI::from_u8(get_url_lang_theme(from_u8(override_url))));
-    } 
+    m_reload_after_secret_token = true;
+    wxGetApp().plater()->get_user_account()->request_printables_secret_token();
 }
 
 void PrintablesWebViewPanel::load_default_url()
@@ -1393,21 +1382,55 @@ void PrintablesWebViewPanel::send_refreshed_token(const std::string& access_toke
     if (m_load_default_url) {
         return;
     }
-    BOOST_LOG_TRIVIAL(debug) << __FUNCTION__;
-    hide_loading_overlay();
-    wxString script = GUI::format_wxstr("window.postMessage(JSON.stringify({"
-        "event: 'accessTokenChange',"
-        "token: '%1%'"
-        "}));"
-        , access_token);
-    run_script(script);
+    // This is where access token used to be send to printables via script.
+    // Instead we first exchange it for secret token now.
+    wxGetApp().plater()->get_user_account()->request_printables_secret_token();
 }
+
+void PrintablesWebViewPanel::on_printables_secret_token(const std::string& body)
+{
+    if (m_load_default_url) {
+        return;
+    }
+    std::string token;
+    try {
+        std::stringstream ss(body);
+        pt::ptree ptree;
+        pt::read_json(ss, ptree);
+        const auto token_opt = ptree.get_optional<std::string>("secretToken");
+        if (!token_opt) {
+           BOOST_LOG_TRIVIAL(error) << "Secret token missing in printables message.";
+           return;
+        }
+        token = *token_opt;
+    } catch (const std::exception &e) {
+        BOOST_LOG_TRIVIAL(error) << "Could not parse printables message. " << e.what();
+        return;
+    }
+
+    hide_loading_overlay();
+
+    nlohmann::json payload = {
+        {"event", "secretTokenChange"},
+        {"secretToken", token}
+    };
+    wxString script = GUI::format_wxstr("window.postMessage(JSON.stringify(%1%));", payload.dump());
+    run_script(script);
+
+    if (m_reload_after_secret_token && m_next_show_url.empty()) {
+        run_script("window.location.reload();");
+    } else if (!m_next_show_url.empty()){
+        load_url(GUI::from_u8(get_url_lang_theme(from_u8(m_next_show_url))));
+        m_next_show_url.clear();
+    } 
+    m_reload_after_secret_token = false;
+}
+
 void PrintablesWebViewPanel::send_will_refresh()
 {
     if (m_load_default_url) {
         return;
     }
-    BOOST_LOG_TRIVIAL(debug) << __FUNCTION__;
     wxString script = "window.postMessage(JSON.stringify({ event: 'accessTokenWillChange' }))";
     run_script(script);
 }
@@ -1687,7 +1710,7 @@ void PrintablesWebViewPanel::define_css()
                     // Debug log for navigation
                     console.log(`Printables:onNavigationRequest: ${url}`);
                     // Handle all non-printables.com domains in an external browser
-                    if (!/printables\.com/.test(url)) {
+                    if (!/printables\.com|prusaverse\.com/.test(url)) {
                         window.ExternalApp.postMessage(JSON.stringify({ event: 'openExternalUrl', url }))
                         event.preventDefault();
                     }

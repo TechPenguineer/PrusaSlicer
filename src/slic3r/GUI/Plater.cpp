@@ -1072,6 +1072,9 @@ void Plater::priv::init()
             fclose(file);
             this->main_frame->refresh_account_menu(true);
         }); 
+        this->q->Bind(EVT_UA_PRINTABLES_SECRET_TOKEN_SUCCESS, [this](UserAccountSuccessEvent& evt) {
+            main_frame->on_printables_secret_token(evt.data);
+        });
         this->q->Bind(EVT_UA_PRUSACONNECT_PRINTER_DATA_SUCCESS, [this](UserAccountSuccessEvent& evt) {
             this->user_account->set_current_printer_data(evt.data);
             wxGetApp().handle_connect_request_printer_select_inner(evt.data);

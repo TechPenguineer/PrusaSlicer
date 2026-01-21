@@ -669,7 +669,20 @@ std::string SLAPrint::validate(std::vector<std::string>*) const
                 "distance' has to be greater than the 'Pad object gap' "
                 "parameter to avoid this.");
         }
-        
+
+        {
+            double object_top_z = po->model_object()->bounding_box_exact().max.z();
+            double elevation = po->get_elevation();
+            double tower_hop = std::max(m_material_config.tower_hop_height.get_at(0), m_material_config.tower_hop_height.get_at(1));
+            double max_z = m_printer_config.max_print_height - EPSILON;
+            if (object_top_z > max_z)
+                return _u8L("Print exceeds maximum print height.");
+            else if (object_top_z + elevation > max_z)
+                return  _u8L("Print would exceed maximum print height after it is lifted for supports / pad.");
+            else if (object_top_z + elevation + tower_hop > max_z)
+                return  _u8L("The print is too tall - there is no space for tower hop at the top.");
+        }
+
         std::string pval = padcfg.validate();
         if (!pval.empty()) return pval;
     }

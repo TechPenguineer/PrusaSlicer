@@ -419,7 +419,7 @@ void PrintConfigDef::init_common_params()
 
     def = this->add("thumbnails", coString);
     def->label = L("G-code thumbnails");
-    def->tooltip = L("Picture sizes to be stored into a .gcode / .bgcode and .sl1 / .sl1s files, in the following format: \"XxY/EXT, XxY/EXT, ...\"\n"
+    def->tooltip = L("Picture sizes to be stored into a .gcode / .bgcode and .sl1 / .sl1s / .slx files, in the following format: \"XxY/EXT, XxY/EXT, ...\"\n"
                      "Currently supported extensions are PNG, QOI and JPG.");
     def->mode = comExpert;
     def->gui_type = ConfigOptionDef::GUIType::one_string;

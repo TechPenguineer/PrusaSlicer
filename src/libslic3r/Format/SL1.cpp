@@ -208,8 +208,10 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
 
     pt::ptree profile_node;
     profile_node.put("area_fill", cfg.option("area_fill")->serialize());
-    profile_node.put("chamber_heater_enable", cfg.opt_bool("chamber_heater_enable"));
-    profile_node.put("chamber_heater_temperature", cfg.option("chamber_heater_temperature")->serialize());
+    if (auto printing_temp_opt = cfg.option("printing_temperature"); printing_temp_opt->is_nil())
+        profile_node.put("printing_temperature", "null");
+    else
+        profile_node.put("printing_temperature", cfg.option("printing_temperature")->serialize());
     profile_node.add_child("below_area_fill", below_node);
     profile_node.add_child("above_area_fill", above_node);
 
@@ -235,6 +237,8 @@ std::string to_json(const SLAPrint& print, const ConfMap &m)
     // In the boost libraries, boost will always serialize each value as string and parse all values to a string equivalent.
     // so, post-prosess output
     std::string result = write_json_with_post_process(root);
+
+    boost::replace_all(result, "\"null\"", "null");
 
     // Note: boost::property_tree cannot represent an empty JSON object {}.
     // It only knows “nodes with a value” and “nodes with children.”

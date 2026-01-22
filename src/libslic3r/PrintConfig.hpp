@@ -1291,8 +1291,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloatNullable,               material_ow_elefant_foot_compensation))
     ((ConfigOptionFloatNullable,               material_ow_absolute_correction))
     ((ConfigOptionFloat,                       area_fill))
-    ((ConfigOptionBool,                        chamber_heater_enable))
-    ((ConfigOptionFloat,                       chamber_heater_temperature))
+    ((ConfigOptionIntNullable,                 printing_temperature))
     
 
     //tilt params

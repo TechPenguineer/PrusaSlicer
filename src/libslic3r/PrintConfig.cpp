@@ -4386,19 +4386,14 @@ void PrintConfigDef::init_sla_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(35.));
 
-    def = this->add("chamber_heater_enable", coBool);
-    def->label = L("Enable chamber heater");
-    def->tooltip = L("TODO");
-    def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionBool(false));
-
-    def = this->add("chamber_heater_temperature", coFloat);
-    def->label = L("Chamber heater temperature");
+    def = this->add_nullable("printing_temperature", coInt);
+    def->label = L("Printing temperature");
     def->tooltip = L("TODO");
     def->sidetext = L("°C");
-    def->min = 0;
+    def->min = 18;
+    def->max = 60;
     def->mode = comAdvanced;
-    def->set_default_value(new ConfigOptionFloat(40.));
+    def->set_default_value(new ConfigOptionIntNullable(ConfigOptionIntNullable::nil_value()));
 
     def = this->add("relative_correction", coFloats);
     def->label = L("Printer scaling correction");

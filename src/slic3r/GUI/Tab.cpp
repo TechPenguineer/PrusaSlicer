@@ -5535,9 +5535,8 @@ void TabSLAMaterial::build()
     optgroup = page->new_optgroup(L("Tilt"));
     optgroup->append_single_option_line("area_fill");
 
-    optgroup = page->new_optgroup(L("Chamber heater"));
-    optgroup->append_single_option_line("chamber_heater_enable");
-    optgroup->append_single_option_line("chamber_heater_temperature");
+    optgroup = page->new_optgroup(L("Temperature"));
+    create_line_with_near_label_widget(optgroup, "printing_temperature");
 
     build_tilt_group(page);
 }
@@ -5698,8 +5697,6 @@ void TabSLAMaterial::toggle_options()
 {
     if (m_active_page->title() == "Material Overrides")
         update_material_overrides_page();
-    if (m_active_page->title() == "Material printing profile")
-        m_config_manipulation.toggle_material_sla_options(m_config);
     toggle_tilt_options(true);
     toggle_tilt_options(false);
 }
@@ -5902,6 +5899,9 @@ static std::vector<std::string> get_override_opt_kyes_for_line(const std::string
     else
         opt_keys.push_back(preprefix + key);
 
+    if (key == "printing_temperature")
+        opt_keys = { "printing_temperature" };
+
     return opt_keys;
 }
 
@@ -5910,7 +5910,7 @@ void TabSLAMaterial::create_line_with_near_label_widget(ConfigOptionsGroupShp op
     if (optgroup->title == "Support head" || optgroup->title == "Support pillar")
         add_options_into_line(optgroup, { {"", L("Default")}, {"branching", L("Branching")} }, key, "material_ow_");
     else {
-        const std::string opt_key = std::string("material_ow_") + key;
+        const std::string opt_key = (key == "printing_temperature") ? key : std::string("material_ow_") + key;
         optgroup->append_single_option_line(opt_key);
     }
 

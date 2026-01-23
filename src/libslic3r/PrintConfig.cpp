@@ -329,16 +329,19 @@ static const t_config_enum_values s_keys_map_TiltSpeedsSLX{
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltSpeedsSLX)
 
 static const t_config_enum_values s_keys_map_TiltDynamicDelayBefore{
+    {"disabled", tddbDisabled},
     {"neg0_2", tddbNeg02}
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltDynamicDelayBefore)
 
 static const t_config_enum_values s_keys_map_TiltDynamicUp{
+    {"disabled", tduDisabled},
     {"threshold_slowdown", tduThresholdSlowdown}
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltDynamicUp)
 
 static const t_config_enum_values s_keys_map_TiltDynamicDown{
+    {"disabled", tddDisabled},
     {"first_peak", tddFirstPeak}
 };
 CONFIG_OPTION_ENUM_DEFINE_STATIC_MAPS(TiltDynamicDown)
@@ -5002,14 +5005,17 @@ void PrintConfigDef::init_sla_tilt_params()
     };
 
     const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_delay_before_il = {
+        { "disabled",   "disabled" },
         { "neg0_2",   "neg0_2" }
     };
 
     const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_up_il = {
-        {"threshold_slowdown", "threshold_slowdown"},
+        { "disabled",   "disabled" },
+        {"threshold_slowdown", "threshold_slowdown"}
     };
 
     const std::initializer_list<std::pair<std::string_view, std::string_view>> tilt_dynamic_down_il = {
+        { "disabled",   "disabled" },
         {"first_peak", "first_peak"}
     };
 
@@ -5082,39 +5088,29 @@ void PrintConfigDef::init_sla_tilt_params()
     def->tooltip = L("TODO");
     def->mode = comExpert;
     def->set_enum<TiltDynamicDelayBefore>(tilt_dynamic_delay_before_il);
-    def->set_default_value(new ConfigOptionEnums<TiltDynamicDelayBefore>({ tddbNeg02, tddbNeg02 }));
+    def->set_default_value(new ConfigOptionEnums<TiltDynamicDelayBefore>({ tddbDisabled, tddbDisabled }));
+
+    def = this->add("dynamic_delay_before_timeout", coFloats); 
+    def->full_label = L("Dynamic delay before exposure timeout");
+    def->tooltip = L("TODO");
+    def->min = 0;
+    def->max = 120;
+    def->mode = comExpert;
+    def->set_default_value(new ConfigOptionFloats{ 50., 50.});
 
     def = this->add("dynamic_tilt_up_profile", coEnums); 
     def->full_label = L("Dynamic tilt up profile");
     def->tooltip = L("TODO");
     def->mode = comExpert;
     def->set_enum<TiltDynamicUp>(tilt_dynamic_up_il);
-    def->set_default_value(new ConfigOptionEnums<TiltDynamicUp>({ tduThresholdSlowdown, tduThresholdSlowdown }));
+    def->set_default_value(new ConfigOptionEnums<TiltDynamicUp>({ tduDisabled, tduDisabled }));
 
     def = this->add("dynamic_tilt_down_profile", coEnums); 
     def->full_label = L("Dynamic tilt down profile");
     def->tooltip = L("TODO");
     def->mode = comExpert;
     def->set_enum<TiltDynamicDown>(tilt_dynamic_down_il);
-    def->set_default_value(new ConfigOptionEnums<TiltDynamicDown>({ tddFirstPeak, tddFirstPeak } ));
-
-    def = this->add("dynamic_delay_before", coBools);
-    def->full_label = L("Dynamic delay before");
-    def->tooltip = L("TODO");
-    def->mode = comExpert;
-    def->set_default_value(new ConfigOptionBools({ false, false }));
-
-    def = this->add("dynamic_tilt_down", coBools);
-    def->full_label = L("Dynamic tilt down");
-    def->tooltip = L("TODO");
-    def->mode = comExpert;
-    def->set_default_value(new ConfigOptionBools({ false, false }));
-
-    def = this->add("dynamic_tilt_up", coBools);
-    def->full_label = L("Dynamic tilt up");
-    def->tooltip = L("TODO");
-    def->mode = comExpert;
-    def->set_default_value(new ConfigOptionBools({ false, false }));
+    def->set_default_value(new ConfigOptionEnums<TiltDynamicDown>({ tddDisabled, tddDisabled } ));
 
     def = this->add("use_tilt", coBools);
     def->full_label = L("Use tilt");
@@ -5506,9 +5502,6 @@ const std::map<std::string, ConfigOptionInts> tilt_options_ints_defs =
 const std::map<std::string, ConfigOptionBools> tilt_options_bools_defs =
 {
     {"use_tilt",                    ConfigOptionBools({ true, true, true, true, true, true, false, false })} ,
-    {"dynamic_delay_before",        ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
-    {"dynamic_tilt_down",           ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
-    {"dynamic_tilt_up",             ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
 };
 
 const std::map<std::string, ConfigOptionEnums<TowerSpeeds>> tower_tilt_options_enums_defs =
@@ -5550,9 +5543,6 @@ const std::map<std::string, ConfigOptionInts> tilt_options_ints_sl1_defs =
 const std::map<std::string, ConfigOptionBools> tilt_options_bools_sl1_defs =
 {
     {"use_tilt",                    ConfigOptionBools({ true, true, true, true, true, true, false, false })} ,
-    {"dynamic_delay_before",        ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
-    {"dynamic_tilt_down",           ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
-    {"dynamic_tilt_up",             ConfigOptionBools({ false, false, false, false, false, false, false, false })} ,
 };
 
 
@@ -5610,7 +5600,7 @@ void update_tilts_by_mode(DynamicPrintConfig& config, int tilt_mode, bool is_sl1
     const std::map<std::string, ConfigOptionEnums<TiltSpeeds>>    tilt_enums_defs  = is_sl1_model ? tilt_options_enums_sl1_defs : tilt_options_enums_defs;
 
     for (const std::string& opt_key : tilt_options()) {
-        if (boost::ends_with(opt_key, "_slx")) {
+        if (boost::ends_with(opt_key, "_slx") || opt_key == "dynamic_delay_before_timeout") {
             // These options are for SLX only, and SLX does not have the legacy
             // Fast/Slow/HighViscosity buttons. Do not touch them.
             continue;

@@ -246,14 +246,17 @@ enum TiltSpeedsSLX : int {
 };
 
 enum TiltDynamicDelayBefore : int {
+    tddbDisabled,
     tddbNeg02
 };
 
 enum TiltDynamicUp : int {
+    tduDisabled,
     tduThresholdSlowdown
 };
 
 enum TiltDynamicDown : int {
+    tddDisabled,
     tddFirstPeak
 };
 
@@ -1301,9 +1304,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloats,                      tower_hop_height))
     ((ConfigOptionEnums<TowerSpeeds>,          tower_speed))
     ((ConfigOptionBools,                       use_tilt))
-    ((ConfigOptionBools,                       dynamic_delay_before))
-    ((ConfigOptionBools,                       dynamic_tilt_down))
-    ((ConfigOptionBools,                       dynamic_tilt_up))
     
     ((ConfigOptionEnums<TiltSpeeds>,           tilt_down_initial_speed))
     ((ConfigOptionInts,                        tilt_down_offset_steps))
@@ -1322,6 +1322,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnums<TiltSpeedsSLX>,        tilt_down_initial_speed_slx))
     ((ConfigOptionEnums<TiltSpeedsSLX>,        tilt_up_finish_speed_slx))
     ((ConfigOptionEnums<TiltDynamicDelayBefore>, dynamic_delay_before_profile))
+    ((ConfigOptionFloats,                      dynamic_delay_before_timeout))
     ((ConfigOptionEnums<TiltDynamicDown>,      dynamic_tilt_down_profile))
     ((ConfigOptionEnums<TiltDynamicUp>,        dynamic_tilt_up_profile))
 )

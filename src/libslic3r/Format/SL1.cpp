@@ -63,6 +63,7 @@ static std::string get_key(const std::string& opt_key)
     , "tilt_up_offset_delay"
     , "tilt_down_delay"
     , "tilt_up_delay"
+    , "dynamic_delay_before_timeout"
     };
     
     static const std::set<std::string> nm_opts = {

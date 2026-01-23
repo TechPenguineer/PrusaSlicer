@@ -5592,7 +5592,7 @@ void TabSLAMaterial::build_tilt_group(Slic3r::GUI::PageShp page)
     auto optgroup = page->new_optgroup(L("Profile settings"));
     optgroup->on_change = [this](const t_config_option_key& key, boost::any value)
     {
-        for (const auto& s : { "use_tilt", "dynamic_delay_before", "dynamic_tilt_down", "dynamic_tilt_up"}) {
+        for (const auto& s : { "use_tilt"}) {
             if (key.find(s) == 0)
                 toggle_tilt_options(key == std::string(s) + "#0");
         }
@@ -5663,10 +5663,8 @@ std::vector<std::string> disable_tilt_options = {
         ,"tilt_up_cycles"
         ,"tilt_up_delay"
         ,"tilt_up_finish_speed_slx"
-        ,"dynamic_delay_before"
-        ,"dynamic_tilt_down"
-        ,"dynamic_tilt_up"
         ,"dynamic_delay_before_profile"
+        ,"dynamic_delay_before_timeout"
         ,"dynamic_tilt_down_profile"
         ,"dynamic_tilt_up_profile"
 };
@@ -5678,17 +5676,20 @@ void TabSLAMaterial::toggle_tilt_options(bool is_above)
         int column_id = is_above ? 0 : 1;
         auto optgroup = m_active_page->get_optgroup("Profile settings");
         bool use_tilt = boost::any_cast<bool>(optgroup->get_config_value(*m_config, "use_tilt", column_id));
+        bool delay_before_enabled = boost::any_cast<int>(optgroup->get_config_value(*m_config, "dynamic_delay_before_profile", column_id)) != tddbDisabled;
 
         for (const std::string& opt_key : disable_tilt_options) {
             bool state = use_tilt;
-            for (const auto& s : {"dynamic_delay_before", "dynamic_tilt_up", "dynamic_tilt_down"}) {
-                if (opt_key == std::string(s) + "_profile")
-                    state &= boost::any_cast<bool>(optgroup->get_config_value(*m_config, s, column_id));
-            }
+            if (opt_key == "dynamic_delay_before_timeout")
+                state &= delay_before_enabled;
 
             auto field = optgroup->get_fieldc(opt_key, column_id);
             if (field != nullptr)
                 field->toggle(state);
+            if (opt_key == "dynamic_delay_before_timeout") {
+                auto field = optgroup->get_fieldc("delay_before_exposure", column_id);
+                field->toggle(! state);
+            }
         }
     }
 }
@@ -5748,10 +5749,8 @@ static std::vector<std::string> show_for_slx = {
     "tilt_up_initial_speed_slx",
     "tilt_up_finish_speed_slx",
     "delay_to_reflood",
-    "dynamic_delay_before",
-    "dynamic_tilt_down",
-    "dynamic_tilt_up",
     "dynamic_delay_before_profile",
+    "dynamic_delay_before_timeout",
     "dynamic_tilt_down_profile",
     "dynamic_tilt_up_profile"
 };

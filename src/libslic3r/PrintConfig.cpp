@@ -4391,7 +4391,9 @@ void PrintConfigDef::init_sla_params()
 
     def = this->add_nullable("printing_temperature", coInt);
     def->label = L("Printing temperature");
-    def->tooltip = L("TODO");
+    def->tooltip = L("This value sets the target printing temperature. The printer will wait for the resin to reach "
+        "this stable temperature before starting and will maintain it throughout the print. When disabled, the printer "
+        "ignores the resin's current temperature and begins printing immediately.");
     def->sidetext = L("°C");
     def->min = 18;
     def->max = 60;
@@ -4920,7 +4922,8 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("delay_before_exposure", coFloats);
     def->full_label = L("Delay before exposure");
-    def->tooltip = L("Delay before exposure after previous layer separation.");
+    def->tooltip = L("Sets a fixed pause before an exposure of the new layer starts. "
+        "This setting is ignored if 'Dynamic delay before exposure' is enabled.");
     def->sidetext = L("s");
     def->min = 0;
     def->max = 300;
@@ -4938,7 +4941,8 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("delay_to_reflood", coFloats);
     def->full_label = L("Delay to reflood");
-    def->tooltip = L("TODO");
+    def->tooltip = L("Defines the pause between the separation movement (tilt down, Z-hop) and the return "
+        "movement (tilt up). Increasing this time allows the resin more time to fully reflood the peeled-off layer.");
     def->sidetext = L("s");
     def->min = 0;
     def->max = 300;
@@ -4947,7 +4951,9 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("tower_hop_height", coFloats);
     def->full_label = L("Tower hop height");
-    def->tooltip = L("The height of the tower raise.");
+    def->tooltip = L("An alternative separation move to tilting. After layer exposure, the platform"
+        " lifts by this distance. A minimum of 5mm is recommended if tilting is disabled. "
+        "If you use tilting, we suggest 0mm, although a combination of both is possible.");
     def->sidetext = L("mm");
     def->min = 0;
     def->max = 100;
@@ -5021,7 +5027,9 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("tilt_down_initial_speed", coEnums); 
     def->full_label = L("Tilt down initial speed");
-    def->tooltip = L("Tilt speed used for an initial portion of tilt down move.");
+    def->tooltip = L("Sets the initial speed for the tilt-down separation move. A high speed may negatively "
+        "affect print quality or success, especially with certain resins or delicate geometries, "
+        "but it speeds up the overall print time.");
     def->mode = comExpert;
     def->sidetext = L("μ-steps/s");
     def->set_enum<TiltSpeeds>(tilt_speeds_il);
@@ -5029,7 +5037,8 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("tilt_down_finish_speed", coEnums); 
     def->full_label = L("Tilt down finish speed");
-    def->tooltip = L("Tilt speed used for the rest of the tilt down move.");
+    def->tooltip = L("Sets the final speed for the tilt-down separation move. Too high a speed, "
+        "especially with less viscous resins, can cause resin to splash out of the tank.");
     def->mode = comExpert;
     def->sidetext = L("μ-steps/s");
     def->set_enum<TiltSpeeds>(tilt_speeds_il);
@@ -5037,7 +5046,7 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("tilt_up_initial_speed", coEnums); 
     def->full_label = L("Tilt up initial speed");
-    def->tooltip = L("Tilt speed used for an initial portion of tilt up move.");
+    def->tooltip = L("Sets the initial speed for the tilt-up return movement.");
     def->mode = comExpert;
     def->sidetext = L("μ-steps/s");
     def->set_enum<TiltSpeeds>(tilt_speeds_il);
@@ -5045,7 +5054,9 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("tilt_up_finish_speed", coEnums); 
     def->full_label = L("Tilt up finish speed");
-    def->tooltip = L("Tilt speed used for the rest of the tilt-up.");
+    def->tooltip = L("Sets the final speed for the tilt-up return movement. Excessive speed, especially "
+        "with highly viscous resins, can lead to a loss of print quality, or in extreme cases, "
+        "tilt motor skipping or damage to the print display.");
     def->mode = comExpert;
     def->sidetext = L("μ-steps/s");
     def->set_enum<TiltSpeeds>(tilt_speeds_il);
@@ -5085,14 +5096,15 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("dynamic_delay_before_profile", coEnums); 
     def->full_label = L("Dynamic delay before profile");
-    def->tooltip = L("TODO");
+    def->tooltip = L("Switches between predefined algorithms that influence how the dynamic delay before exposure function behaves.");
     def->mode = comExpert;
     def->set_enum<TiltDynamicDelayBefore>(tilt_dynamic_delay_before_il);
     def->set_default_value(new ConfigOptionEnums<TiltDynamicDelayBefore>({ tddbDisabled, tddbDisabled }));
 
     def = this->add("dynamic_delay_before_timeout", coFloats); 
     def->full_label = L("Dynamic delay before exposure timeout");
-    def->tooltip = L("TODO");
+    def->tooltip = L("Sets the maximum allowed time for waiting for the pressure sensors to stabilize during dynamic delay before exposure. "
+        "Once this timeout expires, the printer starts exposing the next layer regardless of resin pressure stabilization.");
     def->min = 0;
     def->max = 120;
     def->mode = comExpert;
@@ -5100,27 +5112,29 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("dynamic_tilt_up_profile", coEnums); 
     def->full_label = L("Dynamic tilt up profile");
-    def->tooltip = L("TODO");
+    def->tooltip = L("Switches between predefined algorithms that influence how the dynamic tilt up function behaves.");
     def->mode = comExpert;
     def->set_enum<TiltDynamicUp>(tilt_dynamic_up_il);
     def->set_default_value(new ConfigOptionEnums<TiltDynamicUp>({ tduDisabled, tduDisabled }));
 
     def = this->add("dynamic_tilt_down_profile", coEnums); 
     def->full_label = L("Dynamic tilt down profile");
-    def->tooltip = L("TODO");
+    def->tooltip = L("Switches between predefined algorithms that influence how the dynamic tilt down function behaves.");
     def->mode = comExpert;
     def->set_enum<TiltDynamicDown>(tilt_dynamic_down_il);
     def->set_default_value(new ConfigOptionEnums<TiltDynamicDown>({ tddDisabled, tddDisabled } ));
 
     def = this->add("use_tilt", coBools);
     def->full_label = L("Use tilt");
-    def->tooltip = L("If enabled, tilt is used for layer separation. Otherwise, all the parameters below are ignored.");
+    def->tooltip = L("Enables or disables the tilting function. If disabled, the layer separation is performed using the 'Tower hop height' parameter.");
     def->mode = comExpert;
     def->set_default_value(new ConfigOptionBools({ true, true }));
 
     def = this->add("tilt_down_offset_steps", coInts);
     def->full_label = L("Tilt down offset steps");
-    def->tooltip = L("Number of steps to move down from the calibrated (horizontal) position with 'tilt_down_initial_speed'.");
+    def->tooltip = L("Defines the distance (steps) over which the 'Tilt down initial speed' is applied. "
+        "Once this distance is covered, the tilt moves at the 'Tilt down finish speed'. Setting to 0 "
+        "immediately applies the finish speed. Maximum distance varies by printer, typically around 12,000 steps.");
     def->sidetext = L("μ-steps");
     def->min = 0;
     def->max = 10000;
@@ -5155,7 +5169,8 @@ void PrintConfigDef::init_sla_tilt_params()
 
     def = this->add("tilt_up_offset_steps", coInts);
     def->full_label = L("Tilt up offset steps");
-    def->tooltip = L("Move tilt up to calibrated (horizontal) position minus this offset.");
+    def->tooltip = L("Defines the distance over which the 'Tilt up initial speed' is applied. After this distance, "
+        "the tilt moves at the 'Tilt up finish speed'. Setting to 0 immediately applies the finish speed.");
     def->sidetext = L("μ-steps");
     def->min = 0;
     def->max = 10000;

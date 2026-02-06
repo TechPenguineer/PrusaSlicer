@@ -1348,7 +1348,6 @@ static std::pair<double, bool> calculate_layer_time(
 }
 
 
-
 struct SLALayerInfo {
     double time{0.};
     double area{0.};

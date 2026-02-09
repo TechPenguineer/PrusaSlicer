@@ -1165,6 +1165,7 @@ struct ExposureProfile {
     int     tilt_down_finish_speed      { 0 };
     int     tilt_up_initial_speed       { 0 };
     int     tilt_up_finish_speed        { 0 };
+    int     delay_to_reflood_ms         { 0 };
 
     ExposureProfile() {}
 
@@ -1194,10 +1195,13 @@ struct ExposureProfile {
         tilt_down_finish_speed      = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_finish_speed.getInts()[opt_id]));
         tilt_up_initial_speed       = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_initial_speed.getInts()[opt_id]));
         tilt_up_finish_speed        = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_finish_speed.getInts()[opt_id]));
+
+        // New parameter for SLX printers (delay to allow resin to reflood the vat)
+        delay_to_reflood_ms = config.has("delay_to_reflood") ? int(1000 * config.delay_to_reflood.get_at(opt_id)) : 0;
     }
 };
 
-static int layer_peel_move_time(int layer_height_nm, ExposureProfile p)
+static int layer_peel_move_time(int layer_height_nm, ExposureProfile p, bool is_slx)
 {
     int profile_change_delay = Ms(20);  // propagation delay of sending profile change command to MC
     int sleep_delay = Ms(2);            // average delay of the Linux system sleep function
@@ -1210,17 +1214,22 @@ static int layer_peel_move_time(int layer_height_nm, ExposureProfile p)
             "tilt",
             p.tilt_down_offset_steps,
             p.tilt_down_initial_speed);
-        // initial down delay
-        tilt += p.tilt_down_offset_delay_ms + sleep_delay;
+        // initial down delay (old printers only)
+        if (!is_slx)
+            tilt += p.tilt_down_offset_delay_ms + sleep_delay;
         // profile change delay if down finish profile is different from down initial
         tilt += profile_change_delay;
         // cycle down movement
-        tilt += p.tilt_down_cycles * count_move_time(
-            "tilt",
-            int((tiltHeight - p.tilt_down_offset_steps) / p.tilt_down_cycles),
-            p.tilt_down_finish_speed);
-        // cycle down delay
-        tilt += p.tilt_down_cycles * (p.tilt_down_delay_ms + sleep_delay);
+        if (is_slx)
+            tilt += count_move_time("tilt", tiltHeight - p.tilt_down_offset_steps, p.tilt_down_finish_speed);
+        else {
+            tilt += p.tilt_down_cycles * count_move_time(
+                "tilt",
+                int((tiltHeight - p.tilt_down_offset_steps) / p.tilt_down_cycles),
+                p.tilt_down_finish_speed);
+            // cycle down delay (old printers only)
+            tilt += p.tilt_down_cycles * (p.tilt_down_delay_ms + sleep_delay);
+        }
 
         // profile change delay if up initial profile is different from down finish
         tilt += profile_change_delay;
@@ -1229,18 +1238,27 @@ static int layer_peel_move_time(int layer_height_nm, ExposureProfile p)
             "tilt",
             tiltHeight - p.tilt_up_offset_steps,
             p.tilt_up_initial_speed);
-        // initial up delay
-        tilt += p.tilt_up_offset_delay_ms + sleep_delay;
+        // initial up delay (old printers only)
+        if (!is_slx)
+            tilt += p.tilt_up_offset_delay_ms + sleep_delay;
         // profile change delay if up initial profile is different from down finish
         tilt += profile_change_delay;
         // finish up movement
-        tilt += p.tilt_up_cycles * count_move_time(
-            "tilt",
-            int(p.tilt_up_offset_steps / p.tilt_up_cycles),
-            p.tilt_up_finish_speed);
-        // cycle down delay
-        tilt += p.tilt_up_cycles * (p.tilt_up_delay_ms + sleep_delay);
+        if (is_slx)
+            tilt += count_move_time("tilt", p.tilt_up_offset_steps, p.tilt_up_finish_speed);
+        else {
+            tilt += p.tilt_up_cycles * count_move_time(
+                "tilt",
+                int(p.tilt_up_offset_steps / p.tilt_up_cycles),
+                p.tilt_up_finish_speed);
+            // cycle up delay (old printers only)
+            tilt += p.tilt_up_cycles * (p.tilt_up_delay_ms + sleep_delay);
+        }
     }
+
+    // delay to reflood resin in the vat (new printers only)
+    if (is_slx && p.delay_to_reflood_ms)
+        tilt += p.delay_to_reflood_ms + sleep_delay;
 
     int tower = Ms(0);
     if (p.tower_hop_height_nm > 0) {
@@ -1306,10 +1324,11 @@ static std::pair<double, bool> calculate_layer_time(
         is_fast_layer = int(layer_idx) < first_slow_layers || layer_area <= display_area * area_fill;
         const int l_height_nm = 1000000 * layer_height;
 
-        layer_times = layer_peel_move_time(l_height_nm, is_fast_layer ? below : above) +
+        const int exposure_delay = is_slx ? 0 : (is_fast_layer ? below : above).delay_after_exposure_ms;
+
+        layer_times = layer_peel_move_time(l_height_nm, is_fast_layer ? below : above, is_slx) +
                             (is_fast_layer ? below : above).delay_before_exposure_ms +
-                            (is_fast_layer ? below : above).delay_after_exposure_ms +
-                            refresh_delay_ms * 5 +                  // ~ 5x frame display wait
+                            exposure_delay +
                             124;                                    // Magical constant to compensate remaining computation delay in exposure thread
 
         layer_times *= 0.001; // All before calculations are made in ms, but we need it in s

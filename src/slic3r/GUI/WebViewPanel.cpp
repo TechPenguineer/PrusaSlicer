@@ -466,7 +466,7 @@ void WebViewPanel::on_add_user_script(wxCommandEvent& WXUNUSED(evt))
         return;
 
     const wxString& javascript = dialog.GetValue();
-    BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
+    //BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
     if (!m_browser->AddUserScript(javascript))
         wxLogError("Could not add user script");
 }
@@ -640,7 +640,7 @@ void ConnectWebViewPanel::late_create()
     assert(!access_token.empty());
 
     wxString javascript = get_login_script(true);
-    BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
+    //BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
     m_browser->RunScriptAsync(javascript);
     resend_config();
 }
@@ -656,7 +656,7 @@ void ConnectWebViewPanel::on_user_token(UserAccountSuccessEvent& e)
     assert(!access_token.empty());
 
     wxString javascript = get_login_script(true);
-    BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
+    //BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
     m_browser->RunScriptAsync(javascript);
     resend_config();
 }
@@ -820,7 +820,7 @@ void ConnectWebViewPanel::on_page_will_load()
     }
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__;
     auto javascript = get_login_script(false);
-    BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
+    //BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
     m_browser->AddUserScript(javascript);
 }
 
@@ -928,7 +928,7 @@ void ConnectWebViewPanel::logout()
         )",
                      plater->get_user_account()->get_access_token()
     );
-    BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
+    //BOOST_LOG_TRIVIAL(debug) << "RunScript " << javascript << "\n";
     m_browser->RunScript(javascript);
 }
 
@@ -1089,7 +1089,7 @@ void PrinterWebViewPanel::send_api_key()
 )",
     key);
     m_browser->RemoveAllUserScripts();
-    BOOST_LOG_TRIVIAL(debug) << "RunScript " << script << "\n";
+    //BOOST_LOG_TRIVIAL(debug) << "RunScript " << script << "\n";
     m_browser->AddUserScript(script);
     m_browser->Reload();
     remove_webview_credentials(m_browser);
@@ -1240,6 +1240,9 @@ void PrintablesWebViewPanel::on_loaded(wxWebViewEvent& evt)
         remove_request_authorization(m_browser);
     }
 #endif
+    if (m_refreshing_token) {
+        hide_loading_overlay();
+    }
     m_load_default_url_on_next_error = false;
 }
 
@@ -1306,9 +1309,13 @@ void PrintablesWebViewPanel::after_on_show(wxShowEvent& evt)
         logout(m_next_show_url);
         m_next_show_url.clear();
     } else {
-        login(access_token);
+        if (!m_next_show_url.empty()) {
+            load_url_with_auth(m_next_show_url);
+        } else {
+            load_url_with_auth(into_u8(m_browser->GetCurrentURL()));
+        }
     }
-   
+    m_next_show_url.clear();    
 }
 
 void PrintablesWebViewPanel::logout(const std::string& override_url/* = std::string()*/)
@@ -1338,14 +1345,7 @@ void PrintablesWebViewPanel::login(const std::string& access_token)
     if (!m_shown) {
         return;
     }
-   
-    m_styles_defined = false;
-    // This is where access token used to be send to printables via script.
-    // Instead we first exchange it for secret token now.
-    wxString script = "window.postMessage(JSON.stringify({ event: 'accessTokenWillChange' }))";
-    run_script(script);
-    m_reload_after_secret_token = true;
-    wxGetApp().plater()->get_user_account()->request_printables_secret_token();
+    load_url_with_auth(into_u8(m_browser->GetCurrentURL()));
 }
 
 void PrintablesWebViewPanel::load_default_url()
@@ -1353,16 +1353,24 @@ void PrintablesWebViewPanel::load_default_url()
     if (!m_browser) {
         return;
     }
+    load_url_with_auth(Utils::ServiceConfig::instance().printables_url() + "/homepage");
+}
+
+void PrintablesWebViewPanel::load_url_with_auth(const std::string& url)
+{
+    if (!m_browser) {
+        return;
+    }
     hide_loading_overlay();
     m_styles_defined = false;
-    std::string actual_default_url = get_url_lang_theme(from_u8(Utils::ServiceConfig::instance().printables_url() + "/homepage"));
+    std::string final_url = get_url_lang_theme(from_u8(url));
     const std::string access_token = wxGetApp().plater()->get_user_account()->get_access_token();
     // in case of opening printables logged out - delete cookies and localstorage to get rid of last login
     if (access_token.empty())  {
         BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << " logout";
         delete_cookies(m_browser, Utils::ServiceConfig::instance().printables_url());
         m_browser->AddUserScript("localStorage.clear();");
-        load_url(actual_default_url);
+        load_url(final_url);
         return;
     }
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << " login";
@@ -1371,9 +1379,9 @@ void PrintablesWebViewPanel::load_default_url()
 #ifdef _WIN32
     add_request_authorization(m_browser, m_default_url, access_token);
     m_remove_request_auth = true;
-    load_url(GUI::from_u8(actual_default_url));
+    load_url(GUI::from_u8(final_url));
 #else
-    load_request(m_browser, actual_default_url, access_token);
+    load_request(m_browser, final_url, access_token);
 #endif  
 }
 
@@ -1382,6 +1390,7 @@ void PrintablesWebViewPanel::send_refreshed_token(const std::string& access_toke
     if (m_load_default_url) {
         return;
     }
+    // wxString script = "window.postMessage(JSON.stringify({ event: 'accessTokenWillChange' }))";
     // This is where access token used to be send to printables via script.
     // Instead we first exchange it for secret token now.
     wxGetApp().plater()->get_user_account()->request_printables_secret_token();
@@ -1392,6 +1401,9 @@ void PrintablesWebViewPanel::on_printables_secret_token(const std::string& body)
     if (m_load_default_url) {
         return;
     }
+
+    hide_loading_overlay();
+
     std::string token;
     try {
         std::stringstream ss(body);
@@ -1407,8 +1419,6 @@ void PrintablesWebViewPanel::on_printables_secret_token(const std::string& body)
         BOOST_LOG_TRIVIAL(error) << "Could not parse printables message. " << e.what();
         return;
     }
-
-    hide_loading_overlay();
 
     nlohmann::json payload = {
         {"event", "secretTokenChange"},
@@ -1601,7 +1611,6 @@ void PrintablesWebViewPanel::on_printables_event_open_url(const std::string& mes
 
 void PrintablesWebViewPanel::define_css()
 {
-    
     if (m_styles_defined) {
         return;
     }
@@ -1609,90 +1618,93 @@ void PrintablesWebViewPanel::define_css()
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__;
     std::string script = R"(
         // Loading overlay and Notification style
-        var style = document.createElement('style');
-        style.innerHTML = `
-        body {}
-        .slic3r-loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(127 127 127 / 50%);
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        if (!document.getElementById('slic3r-custom-css')) {
+            var style = document.createElement('style');
+            style.id = 'slic3r-custom-css';
+            style.innerHTML = `
+            body {}
+            .slic3r-loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(127 127 127 / 50%);
+                z-index: 50;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .slic3r-loading-anim {
+                width: 60px;
+                aspect-ratio: 4;
+                --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#0000);
+                background:
+                        var(--_g) 0%   50%,
+                        var(--_g) 50%  50%,
+                        var(--_g) 100% 50%;
+                background-size: calc(100%/3) 100%;
+                animation: slic3r-loading-anim 1s infinite linear;
+            }
+            @keyframes slic3r-loading-anim {
+                33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
+                50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
+                66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
+            }
+            .notification-popup {
+                position: fixed;
+                right: 10px;
+                bottom: 10px;
+                background-color: #333333; /* Dark background */
+                padding: 10px;
+                border-radius: 6px; /* Slightly rounded corners */
+                color: #ffffff; /* White text */
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
+                min-width: 350px; 
+                max-width: 350px;
+                min-height: 50px;
+            }
+            .notification-popup div {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding-right: 20px; /* Add padding to make text truncate earlier */
+            }
+            .notification-popup b {
+                color: #ffa500;
+            }
+            .notification-popup a:hover {
+                text-decoration: underline; /* Underline on hover */
+            }
+            .notification-popup .close-button {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 2px solid #ffa500; /* Orange border for the button */
+                border-radius: 4px;
+                text-align: center;
+                font-size: 16px;
+                line-height: 16px;
+                cursor: pointer;
+                padding-top: 1px; 
+            }
+            .notification-popup .close-button:hover {
+                background-color: #ffa500; /* Orange background on hover */
+                color: #333333; /* Dark color for the "X" on hover */
+            }
+            .notification-popup .close-button:before {
+                content: 'X';
+                color: #ffa500; /* Orange "X" */
+                font-weight: bold;
+            }
+            `;
+            document.head.appendChild(style); 
         }
-        .slic3r-loading-anim {
-            width: 60px;
-            aspect-ratio: 4;
-            --_g: no-repeat radial-gradient(circle closest-side,#000 90%,#0000);
-            background:
-                    var(--_g) 0%   50%,
-                    var(--_g) 50%  50%,
-                    var(--_g) 100% 50%;
-            background-size: calc(100%/3) 100%;
-            animation: slic3r-loading-anim 1s infinite linear;
-        }
-        @keyframes slic3r-loading-anim {
-            33%{background-size:calc(100%/3) 0%  ,calc(100%/3) 100%,calc(100%/3) 100%}
-            50%{background-size:calc(100%/3) 100%,calc(100%/3) 0%  ,calc(100%/3) 100%}
-            66%{background-size:calc(100%/3) 100%,calc(100%/3) 100%,calc(100%/3) 0%  }
-        }
-        .notification-popup {
-            position: fixed;
-            right: 10px;
-            bottom: 10px;
-            background-color: #333333; /* Dark background */
-            padding: 10px;
-            border-radius: 6px; /* Slightly rounded corners */
-            color: #ffffff; /* White text */
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
-            min-width: 350px; 
-            max-width: 350px;
-            min-height: 50px;
-        }
-        .notification-popup div {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 20px; /* Add padding to make text truncate earlier */
-        }
-        .notification-popup b {
-            color: #ffa500;
-        }
-        .notification-popup a:hover {
-            text-decoration: underline; /* Underline on hover */
-        }
-        .notification-popup .close-button {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ffa500; /* Orange border for the button */
-            border-radius: 4px;
-            text-align: center;
-            font-size: 16px;
-            line-height: 16px;
-            cursor: pointer;
-            padding-top: 1px; 
-        }
-        .notification-popup .close-button:hover {
-            background-color: #ffa500; /* Orange background on hover */
-            color: #333333; /* Dark color for the "X" on hover */
-        }
-        .notification-popup .close-button:before {
-            content: 'X';
-            color: #ffa500; /* Orange "X" */
-            font-weight: bold;
-        }
-        `;
-        document.head.appendChild(style); 
     
         // Capture click on hypertext
         // Rewritten from mobileApp code

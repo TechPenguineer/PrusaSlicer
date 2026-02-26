@@ -1097,57 +1097,6 @@ static int count_move_time(const std::string& axis_name, double length, int step
 }
 
 struct ExposureProfile {
-
-    // map of internal TowerSpeeds to maximum_steprates (usteps/s)
-    // this values was provided in default_tower_moving_profiles.json by SLA-team
-    std::map<TowerSpeeds, int> tower_speeds = {
-        { tsLayer1 , 800   },
-        { tsLayer2 , 1600  },
-        { tsLayer3 , 2400  },
-        { tsLayer4 , 3200  },
-        { tsLayer5 , 4000  },
-        { tsLayer8 , 6400  },
-        { tsLayer11, 8800  },
-        { tsLayer14, 11200 },
-        { tsLayer18, 14400 },
-        { tsLayer22, 17600 },
-        { tsLayer24, 19200 },
-    };
-
-    // map of internal TiltSpeeds to maximum_steprates (usteps/s)
-    // this values was provided in default_tilt_moving_profiles.json by SLA-team
-    std::map<TiltSpeeds, int> tilt_speeds = {
-        { tsMove120  , 120   },
-        { tsLayer200 , 200   },
-        { tsMove300  , 300   },
-        { tsLayer400 , 400   },
-        { tsLayer600 , 600   },
-        { tsLayer800 , 800   },
-        { tsLayer1000, 1000  },
-        { tsLayer1250, 1250  },
-        { tsLayer1500, 1500  },
-        { tsLayer1750, 1750  },
-        { tsLayer2000, 2000  },
-        { tsLayer2250, 2250  },
-        { tsMove5120 , 5120  },
-        { tsMove8000 , 8000  },
-    };
-
-    // map of internal TiltSpeeds to maximum_steprates (usteps/s)
-    // this values was provided in default_tilt_moving_profiles.json by SLA-team
-    std::map<TiltSpeedsSLX, int> tilt_speeds_slx = {
-        { tssLayer160  , 160   },
-        { tssLayer1600 , 1600  },
-        { tssLayer3040 , 3040  },
-        { tssLayer4480 , 4480  },
-        { tssLayer5920 , 5920  },
-        { tssLayer7360 , 7360  },
-        { tssLayer8800 , 8800  },
-        { tssLayer10240, 10240 },
-        { tssLayer11680, 11680 },
-        { tssLayer13120, 13120 },
-    };
-
     int     delay_before_exposure_ms    { 0 };
     int     delay_after_exposure_ms     { 0 };
     int     tilt_down_offset_delay_ms   { 0 };
@@ -1166,42 +1115,111 @@ struct ExposureProfile {
     int     tilt_up_initial_speed       { 0 };
     int     tilt_up_finish_speed        { 0 };
     int     delay_to_reflood_ms         { 0 };
-
-    ExposureProfile() {}
-
-    ExposureProfile(const SLAMaterialConfig& config, int opt_id, bool is_slx)
-    {
-        delay_before_exposure_ms    = int(1000 * config.delay_before_exposure.get_at(opt_id));
-        delay_after_exposure_ms     = int(1000 * config.delay_after_exposure.get_at(opt_id));
-        tilt_down_offset_delay_ms   = int(1000 * config.tilt_down_offset_delay.get_at(opt_id));
-        tilt_down_delay_ms          = int(1000 * config.tilt_down_delay.get_at(opt_id));
-        tilt_up_offset_delay_ms     = int(1000 * config.tilt_up_offset_delay.get_at(opt_id));
-        tilt_up_delay_ms            = int(1000 * config.tilt_up_delay.get_at(opt_id));
-        tower_hop_height_nm         = int(config.tower_hop_height.get_at(opt_id) * 1000000);
-        tilt_down_offset_steps      = config.tilt_down_offset_steps.get_at(opt_id);
-        tilt_down_cycles            = config.tilt_down_cycles.get_at(opt_id);
-        tilt_up_offset_steps        = config.tilt_up_offset_steps.get_at(opt_id);
-        tilt_up_cycles              = config.tilt_up_cycles.get_at(opt_id);
-        use_tilt                    = config.use_tilt.get_at(opt_id);
-        tower_speed                 = tower_speeds.at(static_cast<TowerSpeeds>(config.tower_speed.getInts()[opt_id]));
-        if (is_slx) {
-            tilt_down_initial_speed = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_down_initial_speed_slx.getInts()[opt_id]));
-            tilt_down_finish_speed  = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_down_finish_speed_slx.getInts()[opt_id]));
-            tilt_up_initial_speed   = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_up_initial_speed_slx.getInts()[opt_id]));
-            tilt_up_finish_speed    = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_up_finish_speed_slx.getInts()[opt_id]));
-            return;
-        }
-        tilt_down_initial_speed     = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_initial_speed.getInts()[opt_id]));
-        tilt_down_finish_speed      = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_finish_speed.getInts()[opt_id]));
-        tilt_up_initial_speed       = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_initial_speed.getInts()[opt_id]));
-        tilt_up_finish_speed        = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_finish_speed.getInts()[opt_id]));
-
-        // New parameter for SLX printers (delay to allow resin to reflood the vat)
-        delay_to_reflood_ms = config.has("delay_to_reflood") ? int(1000 * config.delay_to_reflood.get_at(opt_id)) : 0;
-    }
 };
 
-static int layer_peel_move_time(int layer_height_nm, ExposureProfile p, bool is_slx)
+struct SLATimeEstimateInput {
+    double           area_fill;           // material area_fill * 0.01
+    double           fast_tilt;           // printer fast_tilt_time
+    double           slow_tilt;           // printer slow_tilt_time
+    double           hv_tilt;             // printer high_viscosity_tilt_time
+    double           init_exp_time;       // material initial_exposure_time
+    double           exp_time;            // material exposure_time
+    int              fade_layers_cnt;     // object faded_layers
+    bool             is_slx;
+    bool             is_prusa_print;
+    double           display_area;        // display_width * display_height (scaled)
+    SLAMaterialSpeed material_print_speed;
+    ExposureProfile  below;              // exposure profile for bottom/fast layers
+    ExposureProfile  above;              // exposure profile for top/slow layers
+    size_t           layer_idx;
+    double           layer_height;
+    double           layer_area;
+};
+
+static ExposureProfile create_exposure_profile(const SLAMaterialConfig& config, int opt_id, bool is_slx)
+{
+    // map of internal TowerSpeeds to maximum_steprates (usteps/s)
+    // this values was provided in default_tower_moving_profiles.json by SLA-team
+    static const std::map<TowerSpeeds, int> tower_speeds = {
+        { tsLayer1 , 800   },
+        { tsLayer2 , 1600  },
+        { tsLayer3 , 2400  },
+        { tsLayer4 , 3200  },
+        { tsLayer5 , 4000  },
+        { tsLayer8 , 6400  },
+        { tsLayer11, 8800  },
+        { tsLayer14, 11200 },
+        { tsLayer18, 14400 },
+        { tsLayer22, 17600 },
+        { tsLayer24, 19200 },
+    };
+
+    // map of internal TiltSpeeds to maximum_steprates (usteps/s)
+    // this values was provided in default_tilt_moving_profiles.json by SLA-team
+    static const std::map<TiltSpeeds, int> tilt_speeds = {
+        { tsMove120  , 120   },
+        { tsLayer200 , 200   },
+        { tsMove300  , 300   },
+        { tsLayer400 , 400   },
+        { tsLayer600 , 600   },
+        { tsLayer800 , 800   },
+        { tsLayer1000, 1000  },
+        { tsLayer1250, 1250  },
+        { tsLayer1500, 1500  },
+        { tsLayer1750, 1750  },
+        { tsLayer2000, 2000  },
+        { tsLayer2250, 2250  },
+        { tsMove5120 , 5120  },
+        { tsMove8000 , 8000  },
+    };
+
+    // map of internal TiltSpeeds to maximum_steprates (usteps/s)
+    // this values was provided in default_tilt_moving_profiles.json by SLA-team
+    static const std::map<TiltSpeedsSLX, int> tilt_speeds_slx = {
+        { tssLayer160  , 160   },
+        { tssLayer1600 , 1600  },
+        { tssLayer3040 , 3040  },
+        { tssLayer4480 , 4480  },
+        { tssLayer5920 , 5920  },
+        { tssLayer7360 , 7360  },
+        { tssLayer8800 , 8800  },
+        { tssLayer10240, 10240 },
+        { tssLayer11680, 11680 },
+        { tssLayer13120, 13120 },
+    };
+
+    ExposureProfile ep;
+
+    ep.delay_before_exposure_ms    = int(1000 * config.delay_before_exposure.get_at(opt_id));
+    ep.delay_after_exposure_ms     = int(1000 * config.delay_after_exposure.get_at(opt_id));
+    ep.tilt_down_offset_delay_ms   = int(1000 * config.tilt_down_offset_delay.get_at(opt_id));
+    ep.tilt_down_delay_ms          = int(1000 * config.tilt_down_delay.get_at(opt_id));
+    ep.tilt_up_offset_delay_ms     = int(1000 * config.tilt_up_offset_delay.get_at(opt_id));
+    ep.tilt_up_delay_ms            = int(1000 * config.tilt_up_delay.get_at(opt_id));
+    ep.tower_hop_height_nm         = int(config.tower_hop_height.get_at(opt_id) * 1000000);
+    ep.tilt_down_offset_steps      = config.tilt_down_offset_steps.get_at(opt_id);
+    ep.tilt_down_cycles            = config.tilt_down_cycles.get_at(opt_id);
+    ep.tilt_up_offset_steps        = config.tilt_up_offset_steps.get_at(opt_id);
+    ep.tilt_up_cycles              = config.tilt_up_cycles.get_at(opt_id);
+    ep.use_tilt                    = config.use_tilt.get_at(opt_id);
+    ep.tower_speed                 = tower_speeds.at(static_cast<TowerSpeeds>(config.tower_speed.getInts()[opt_id]));
+    if (is_slx) {
+        ep.tilt_down_initial_speed = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_down_initial_speed_slx.getInts()[opt_id]));
+        ep.tilt_down_finish_speed  = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_down_finish_speed_slx.getInts()[opt_id]));
+        ep.tilt_up_initial_speed   = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_up_initial_speed_slx.getInts()[opt_id]));
+        ep.tilt_up_finish_speed    = tilt_speeds_slx.at(static_cast<TiltSpeedsSLX>(config.tilt_up_finish_speed_slx.getInts()[opt_id]));
+        ep.delay_to_reflood_ms     = config.has("delay_to_reflood") ? int(1000 * config.delay_to_reflood.get_at(opt_id)) : 0;
+    } else {
+        ep.tilt_down_initial_speed     = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_initial_speed.getInts()[opt_id]));
+        ep.tilt_down_finish_speed      = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_down_finish_speed.getInts()[opt_id]));
+        ep.tilt_up_initial_speed       = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_initial_speed.getInts()[opt_id]));
+        ep.tilt_up_finish_speed        = tilt_speeds.at(static_cast<TiltSpeeds>(config.tilt_up_finish_speed.getInts()[opt_id]));
+        ep.delay_to_reflood_ms         = 0;
+    }
+    return ep;
+}
+
+static int layer_peel_move_time(int layer_height_nm, const ExposureProfile& p, bool is_slx)
 {
     int profile_change_delay = Ms(20);  // propagation delay of sending profile change command to MC
     int sleep_delay = Ms(2);            // average delay of the Linux system sleep function
@@ -1284,60 +1302,68 @@ static int layer_peel_move_time(int layer_height_nm, ExposureProfile p, bool is_
 
 
 
-// Returns pair of (layer_time, is_fast_layer)
-static std::pair<double, bool> calculate_layer_time(
-    const SLAPrinterConfig& printer_config,
-    const SLAMaterialConfig& material_config,
+static SLATimeEstimateInput prepare_sla_time_estimate_input(
+    const SLAPrinterConfig&     printer_config,
+    const SLAMaterialConfig&    material_config,
     const SLAPrintObjectConfig& object_config,
     size_t layer_idx,
     double layer_height,
     double layer_area)
 {
-    const double area_fill = material_config.area_fill.getFloat()*0.01;// 0.5 (50%);
-    const double fast_tilt = printer_config.fast_tilt_time.getFloat();// 5.0;
-    const double slow_tilt = printer_config.slow_tilt_time.getFloat();// 8.0;
-    const double hv_tilt   = printer_config.high_viscosity_tilt_time.getFloat();// 10.0;
+    const bool is_slx        = printer_config.opt_string("printer_model") == "SLX";
+    const auto width         = scaled<double>(printer_config.display_width.getFloat());
+    const auto height        = scaled<double>(printer_config.display_height.getFloat());
 
-    const double init_exp_time = material_config.initial_exposure_time.getFloat();
-    const double exp_time      = material_config.exposure_time.getFloat();
+    return SLATimeEstimateInput{
+        // TODO: add designated initializers when we will switch to C++20
+        material_config.area_fill.getFloat() * 0.01,
+        printer_config.fast_tilt_time.getFloat(),
+        printer_config.slow_tilt_time.getFloat(),
+        printer_config.high_viscosity_tilt_time.getFloat(),
+        material_config.initial_exposure_time.getFloat(),
+        material_config.exposure_time.getFloat(),
+        object_config.faded_layers.getInt(),
+        is_slx,
+        SLAPrint::is_prusa_print(printer_config.printer_model),
+        width * height, // display_area
+        material_config.material_print_speed,
+        create_exposure_profile(material_config, 0, is_slx),
+        create_exposure_profile(material_config, 1, is_slx),
+        layer_idx,
+        layer_height,
+        layer_area,
+    };
+}
 
-    const int fade_layers_cnt = object_config.faded_layers.getInt();// 10 // [3;20]
-
-    bool is_slx = printer_config.opt_string("printer_model") == "SLX";
-    ExposureProfile below(material_config, 0, is_slx);
-    ExposureProfile above(material_config, 1, is_slx);
-
-    const int           first_slow_layers   = fade_layers_cnt + first_extra_slow_layers;
-    const bool          is_prusa_print = SLAPrint::is_prusa_print(printer_config.printer_model);
-
-    const auto width          = scaled<double>(printer_config.display_width.getFloat());
-    const auto height         = scaled<double>(printer_config.display_height.getFloat());
-    const double display_area = width*height;
-    const double delta_fade_time = (init_exp_time - exp_time) / (fade_layers_cnt + 1);
+// Returns pair of (layer_time, is_fast_layer)
+static std::pair<double, bool> calculate_layer_time(const SLATimeEstimateInput& in)
+{
+    const int    first_slow_layers = in.fade_layers_cnt + first_extra_slow_layers;
+    const double delta_fade_time   = (in.init_exp_time - in.exp_time) / (in.fade_layers_cnt + 1);
 
     // Calculation of the printing time
     // + Calculation of the slow and fast layers to the future controlling those values on FW
     double layer_times = 0.0;
     bool is_fast_layer = false;
 
-    if (is_prusa_print) {
-        is_fast_layer = int(layer_idx) < first_slow_layers || layer_area <= display_area * area_fill;
-        const int l_height_nm = 1000000 * layer_height;
+    if (in.is_prusa_print) {
+        is_fast_layer = int(in.layer_idx) < first_slow_layers || in.layer_area <= in.display_area * in.area_fill;
+        const int l_height_nm = 1000000 * in.layer_height;
 
-        const int exposure_delay = is_slx ? 0 : (is_fast_layer ? below : above).delay_after_exposure_ms;
+        const int exposure_delay = in.is_slx ? 0 : (is_fast_layer ? in.below : in.above).delay_after_exposure_ms;
 
-        layer_times = layer_peel_move_time(l_height_nm, is_fast_layer ? below : above, is_slx) +
-                            (is_fast_layer ? below : above).delay_before_exposure_ms +
+        layer_times = layer_peel_move_time(l_height_nm, is_fast_layer ? in.below : in.above, in.is_slx) +
+                            (is_fast_layer ? in.below : in.above).delay_before_exposure_ms +
                             exposure_delay +
                             124;                                    // Magical constant to compensate remaining computation delay in exposure thread
 
         layer_times *= 0.001; // All before calculations are made in ms, but we need it in s
     }
     else {
-        is_fast_layer = layer_area <= display_area*area_fill;
-        const double tilt_time = material_config.material_print_speed == slamsSlow              ? slow_tilt :
-                                    material_config.material_print_speed == slamsHighViscosity     ? hv_tilt   :
-                                    is_fast_layer ? fast_tilt : slow_tilt;
+        is_fast_layer = in.layer_area <= in.display_area * in.area_fill;
+        const double tilt_time = in.material_print_speed == slamsSlow            ? in.slow_tilt :
+                                 in.material_print_speed == slamsHighViscosity    ? in.hv_tilt   :
+                                 is_fast_layer ? in.fast_tilt : in.slow_tilt;
 
         layer_times += tilt_time;
 
@@ -1346,22 +1372,22 @@ static std::pair<double, bool> calculate_layer_time(
         static double exposure_high_viscosity_delay_before{ 3.5 };
         static double exposure_slow_move_delay_before{ 1.0 };
 
-        if (material_config.material_print_speed == slamsSlow)
+        if (in.material_print_speed == slamsSlow)
             layer_times += exposure_safe_delay_before;
-        else if (material_config.material_print_speed == slamsHighViscosity)
+        else if (in.material_print_speed == slamsHighViscosity)
             layer_times += exposure_high_viscosity_delay_before;
         else if (!is_fast_layer)
             layer_times += exposure_slow_move_delay_before;
 
         // Increase layer time for "magic constants" from FW
         layer_times += (
-            layer_height * 5  // tower move
+            in.layer_height * 5  // tower move
             + 120 / 1000  // Magical constant to compensate remaining computation delay in exposure thread
         );
     }
 
     // We are done with tilt time, but we haven't added the exposure time yet.
-    layer_times += std::max(exp_time, init_exp_time - layer_idx * delta_fade_time);
+    layer_times += std::max(in.exp_time, in.init_exp_time - in.layer_idx * delta_fade_time);
 
     return std::make_pair(layer_times, is_fast_layer);
 }
@@ -1430,8 +1456,9 @@ static ExPolygons printlayerfn(const SLAPrint& print, size_t layer_idx, std::vec
     for(ExPolygon& poly : model_polygons) trslices.emplace_back(std::move(poly));
     for(ExPolygon& poly : supports_polygons) trslices.emplace_back(std::move(poly));
 
-    const auto [layer_time, is_fast_layer] = calculate_layer_time(print.printer_config(), print.material_config(),
-        print.default_object_config(), layer_idx, l_height, layer_area);
+    const auto [layer_time, is_fast_layer] = calculate_layer_time(
+        prepare_sla_time_estimate_input(print.printer_config(), print.material_config(),
+            print.default_object_config(), layer_idx, l_height, layer_area));
 
     // Collect values for this layer.
     layers_info[layer_idx] = SLALayerInfo{layer_time, layer_area * SCALING_FACTOR * SCALING_FACTOR, is_fast_layer, models_volume, supports_volume};

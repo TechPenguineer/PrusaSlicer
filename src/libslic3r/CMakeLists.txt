@@ -622,6 +622,7 @@ find_package(JPEG REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 target_link_libraries(libslic3r PRIVATE
+    sla_time_estimate
     libnest2d
     libcereal
     boost_libs

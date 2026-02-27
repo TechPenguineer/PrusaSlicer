@@ -4,6 +4,7 @@
 ///|/
 #include <libslic3r/Exception.hpp>
 #include <libslic3r/SLAPrintSteps.hpp>
+#include <sla-time-estimates/SLATimeEstimate.hpp>
 #include <libslic3r/MeshBoolean.hpp>
 #include <libslic3r/TriangleMeshSlicer.hpp>
 #include <libslic3r/Execution/ExecutionTBB.hpp>
@@ -1060,81 +1061,6 @@ void SLAPrint::Steps::initialize_printer_input()
     }
 }
 
-static int Ms(int s)
-{
-    return s;
-}
-
-// constant values from FW
-int tiltHeight              = 4959; //nm
-int tower_microstep_size_nm = 250000;
-int first_extra_slow_layers = 3;
-int refresh_delay_ms        = 0;
-
-static int nm_to_tower_microsteps(int nm) {
-    // add implementation
-    return nm / tower_microstep_size_nm;
-}
-
-static int count_move_time(const std::string& axis_name, double length, int steprate)
-{
-    if (length < 0 || steprate < 0)
-        return 0;
-
-    // sla - fw checks every 0.1 s if axis is still moving.See: Axis._wait_to_stop_delay.Additional 0.021 s is
-    // measured average delay of the system.Thus, the axis movement time is always quantized by this value.
-    double delay = 0.121;
-
-    // Both axes use linear ramp movements. This factor compensates the tilt acceleration and deceleration time.
-    double tilt_comp_factor = 0.1;
-
-    // Both axes use linear ramp movements.This factor compensates the tower acceleration and deceleration time.
-    int tower_comp_factor = 20000;
-
-    int l = int(length);
-    return axis_name == "tower" ? Ms((int(l / (steprate * delay) + (steprate + l) / tower_comp_factor) + 1) * (delay * 1000)) :
-                                  Ms((int(l / (steprate * delay) + tilt_comp_factor) + 1) * (delay * 1000));
-}
-
-struct ExposureProfile {
-    int     delay_before_exposure_ms    { 0 };
-    int     delay_after_exposure_ms     { 0 };
-    int     tilt_down_offset_delay_ms   { 0 };
-    int     tilt_down_delay_ms          { 0 };
-    int     tilt_up_offset_delay_ms     { 0 };
-    int     tilt_up_delay_ms            { 0 };
-    int     tower_hop_height_nm         { 0 };
-    int     tilt_down_offset_steps      { 0 };
-    int     tilt_down_cycles            { 0 };
-    int     tilt_up_offset_steps        { 0 };
-    int     tilt_up_cycles              { 0 };
-    bool    use_tilt                    { true };
-    int     tower_speed                 { 0 };
-    int     tilt_down_initial_speed     { 0 };
-    int     tilt_down_finish_speed      { 0 };
-    int     tilt_up_initial_speed       { 0 };
-    int     tilt_up_finish_speed        { 0 };
-    int     delay_to_reflood_ms         { 0 };
-};
-
-struct SLATimeEstimateInput {
-    double           area_fill;           // material area_fill * 0.01
-    double           fast_tilt;           // printer fast_tilt_time
-    double           slow_tilt;           // printer slow_tilt_time
-    double           hv_tilt;             // printer high_viscosity_tilt_time
-    double           init_exp_time;       // material initial_exposure_time
-    double           exp_time;            // material exposure_time
-    int              fade_layers_cnt;     // object faded_layers
-    bool             is_slx;
-    bool             is_prusa_print;
-    double           display_area;        // display_width * display_height (scaled)
-    SLAMaterialSpeed material_print_speed;
-    ExposureProfile  below;              // exposure profile for bottom/fast layers
-    ExposureProfile  above;              // exposure profile for top/slow layers
-    size_t           layer_idx;
-    double           layer_height;
-    double           layer_area;
-};
 
 static ExposureProfile create_exposure_profile(const SLAMaterialConfig& config, int opt_id, bool is_slx)
 {
@@ -1219,88 +1145,6 @@ static ExposureProfile create_exposure_profile(const SLAMaterialConfig& config, 
     return ep;
 }
 
-static int layer_peel_move_time(int layer_height_nm, const ExposureProfile& p, bool is_slx)
-{
-    int profile_change_delay = Ms(20);  // propagation delay of sending profile change command to MC
-    int sleep_delay = Ms(2);            // average delay of the Linux system sleep function
-
-    int tilt = Ms(0);
-    if (p.use_tilt) {
-        tilt += profile_change_delay;
-        // initial down movement
-        tilt += count_move_time(
-            "tilt",
-            p.tilt_down_offset_steps,
-            p.tilt_down_initial_speed);
-        // initial down delay (old printers only)
-        if (!is_slx)
-            tilt += p.tilt_down_offset_delay_ms + sleep_delay;
-        // profile change delay if down finish profile is different from down initial
-        tilt += profile_change_delay;
-        // cycle down movement
-        if (is_slx)
-            tilt += count_move_time("tilt", tiltHeight - p.tilt_down_offset_steps, p.tilt_down_finish_speed);
-        else {
-            tilt += p.tilt_down_cycles * count_move_time(
-                "tilt",
-                int((tiltHeight - p.tilt_down_offset_steps) / p.tilt_down_cycles),
-                p.tilt_down_finish_speed);
-            // cycle down delay (old printers only)
-            tilt += p.tilt_down_cycles * (p.tilt_down_delay_ms + sleep_delay);
-        }
-
-        // profile change delay if up initial profile is different from down finish
-        tilt += profile_change_delay;
-        // initial up movement
-        tilt += count_move_time(
-            "tilt",
-            tiltHeight - p.tilt_up_offset_steps,
-            p.tilt_up_initial_speed);
-        // initial up delay (old printers only)
-        if (!is_slx)
-            tilt += p.tilt_up_offset_delay_ms + sleep_delay;
-        // profile change delay if up initial profile is different from down finish
-        tilt += profile_change_delay;
-        // finish up movement
-        if (is_slx)
-            tilt += count_move_time("tilt", p.tilt_up_offset_steps, p.tilt_up_finish_speed);
-        else {
-            tilt += p.tilt_up_cycles * count_move_time(
-                "tilt",
-                int(p.tilt_up_offset_steps / p.tilt_up_cycles),
-                p.tilt_up_finish_speed);
-            // cycle up delay (old printers only)
-            tilt += p.tilt_up_cycles * (p.tilt_up_delay_ms + sleep_delay);
-        }
-    }
-
-    // delay to reflood resin in the vat (new printers only)
-    if (is_slx && p.delay_to_reflood_ms)
-        tilt += p.delay_to_reflood_ms + sleep_delay;
-
-    int tower = Ms(0);
-    if (p.tower_hop_height_nm > 0) {
-        tower += count_move_time(
-            "tower",
-            nm_to_tower_microsteps(int(p.tower_hop_height_nm) + layer_height_nm),
-            p.tower_speed);
-        tower += count_move_time(
-            "tower",
-            nm_to_tower_microsteps(int(p.tower_hop_height_nm)),
-            p.tower_speed);
-        tower += profile_change_delay;
-    }
-    else {
-        tower += count_move_time(
-            "tower",
-            nm_to_tower_microsteps(layer_height_nm),
-            p.tower_speed);
-        tower += profile_change_delay;
-    }
-    return int(tilt + tower);
-}
-
-
 
 static SLATimeEstimateInput prepare_sla_time_estimate_input(
     const SLAPrinterConfig&     printer_config,
@@ -1311,8 +1155,8 @@ static SLATimeEstimateInput prepare_sla_time_estimate_input(
     double layer_area)
 {
     const bool is_slx        = printer_config.opt_string("printer_model") == "SLX";
-    const auto width         = scaled<double>(printer_config.display_width.getFloat());
-    const auto height        = scaled<double>(printer_config.display_height.getFloat());
+    const auto width         = printer_config.display_width.getFloat();
+    const auto height        = printer_config.display_height.getFloat();
 
     return SLATimeEstimateInput{
         // TODO: add designated initializers when we will switch to C++20
@@ -1325,8 +1169,8 @@ static SLATimeEstimateInput prepare_sla_time_estimate_input(
         object_config.faded_layers.getInt(),
         is_slx,
         SLAPrint::is_prusa_print(printer_config.printer_model),
-        width * height, // display_area
-        material_config.material_print_speed,
+        width * height, // display_area (unscaled)
+        static_cast<int>(material_config.material_print_speed),
         create_exposure_profile(material_config, 0, is_slx),
         create_exposure_profile(material_config, 1, is_slx),
         layer_idx,
@@ -1334,64 +1178,6 @@ static SLATimeEstimateInput prepare_sla_time_estimate_input(
         layer_area,
     };
 }
-
-// Returns pair of (layer_time, is_fast_layer)
-static std::pair<double, bool> calculate_layer_time(const SLATimeEstimateInput& in)
-{
-    const int    first_slow_layers = in.fade_layers_cnt + first_extra_slow_layers;
-    const double delta_fade_time   = (in.init_exp_time - in.exp_time) / (in.fade_layers_cnt + 1);
-
-    // Calculation of the printing time
-    // + Calculation of the slow and fast layers to the future controlling those values on FW
-    double layer_times = 0.0;
-    bool is_fast_layer = false;
-
-    if (in.is_prusa_print) {
-        is_fast_layer = int(in.layer_idx) < first_slow_layers || in.layer_area <= in.display_area * in.area_fill;
-        const int l_height_nm = 1000000 * in.layer_height;
-
-        const int exposure_delay = in.is_slx ? 0 : (is_fast_layer ? in.below : in.above).delay_after_exposure_ms;
-
-        layer_times = layer_peel_move_time(l_height_nm, is_fast_layer ? in.below : in.above, in.is_slx) +
-                            (is_fast_layer ? in.below : in.above).delay_before_exposure_ms +
-                            exposure_delay +
-                            124;                                    // Magical constant to compensate remaining computation delay in exposure thread
-
-        layer_times *= 0.001; // All before calculations are made in ms, but we need it in s
-    }
-    else {
-        is_fast_layer = in.layer_area <= in.display_area * in.area_fill;
-        const double tilt_time = in.material_print_speed == slamsSlow            ? in.slow_tilt :
-                                 in.material_print_speed == slamsHighViscosity    ? in.hv_tilt   :
-                                 is_fast_layer ? in.fast_tilt : in.slow_tilt;
-
-        layer_times += tilt_time;
-
-        //// Per layer times (magical constants cuclulated from FW)
-        static double exposure_safe_delay_before{ 3.0 };
-        static double exposure_high_viscosity_delay_before{ 3.5 };
-        static double exposure_slow_move_delay_before{ 1.0 };
-
-        if (in.material_print_speed == slamsSlow)
-            layer_times += exposure_safe_delay_before;
-        else if (in.material_print_speed == slamsHighViscosity)
-            layer_times += exposure_high_viscosity_delay_before;
-        else if (!is_fast_layer)
-            layer_times += exposure_slow_move_delay_before;
-
-        // Increase layer time for "magic constants" from FW
-        layer_times += (
-            in.layer_height * 5  // tower move
-            + 120 / 1000  // Magical constant to compensate remaining computation delay in exposure thread
-        );
-    }
-
-    // We are done with tilt time, but we haven't added the exposure time yet.
-    layer_times += std::max(in.exp_time, in.init_exp_time - in.layer_idx * delta_fade_time);
-
-    return std::make_pair(layer_times, is_fast_layer);
-}
-
 
 struct SLALayerInfo {
     double time{0.};
@@ -1448,7 +1234,7 @@ static ExPolygons printlayerfn(const SLAPrint& print, size_t layer_idx, std::vec
         layer_support_area += area(polygon);
 
     const double supports_volume = (layer_support_area < 0 || layer_support_area > 0) ? layer_support_area * l_height : 0.;
-    const double layer_area = layer_model_area + layer_support_area;
+    const double layer_area = (layer_model_area + layer_support_area) * SCALING_FACTOR * SCALING_FACTOR;
 
     // Here we can save the expensively calculated polygons for printing
     ExPolygons trslices;
@@ -1461,7 +1247,7 @@ static ExPolygons printlayerfn(const SLAPrint& print, size_t layer_idx, std::vec
             print.default_object_config(), layer_idx, l_height, layer_area));
 
     // Collect values for this layer.
-    layers_info[layer_idx] = SLALayerInfo{layer_time, layer_area * SCALING_FACTOR * SCALING_FACTOR, is_fast_layer, models_volume, supports_volume};
+    layers_info[layer_idx] = SLALayerInfo{layer_time, layer_area, is_fast_layer, models_volume, supports_volume};
 
     return union_ex(trslices);
 };

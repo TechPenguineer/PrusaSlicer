@@ -15,8 +15,9 @@ static const int kSpeedFast          = 1; // slamsFast
 static const int kSpeedHighViscosity = 2; // slamsHighViscosity
 
 // Constant values from FW
-static int tiltHeight              = 4959; // nm
-static int tower_microstep_size_nm = 250000;
+static int tiltHeight_sl1          = 4959;  // ustep
+static int tiltHeight_slx          = 12096; // ustep
+static int tower_microstep_size_nm = 1250;  // nm
 static int first_extra_slow_layers = 3;
 
 static int Ms(int s)
@@ -31,9 +32,8 @@ static int nm_to_tower_microsteps(int nm)
 
 static int count_move_time(const std::string& axis_name, double length, int steprate)
 {
-    if (length < 0 || steprate < 0)
+    if (length <= 0 || steprate <= 0)
         return 0;
-
     // sla - fw checks every 0.1 s if axis is still moving. See: Axis._wait_to_stop_delay. Additional 0.021 s is
     // measured average delay of the system. Thus, the axis movement time is always quantized by this value.
     double delay = 0.121;
@@ -53,6 +53,7 @@ static int layer_peel_move_time(int layer_height_nm, const ExposureProfile& p, b
 {
     int profile_change_delay = Ms(20);  // propagation delay of sending profile change command to MC
     int sleep_delay = Ms(2);            // average delay of the Linux system sleep function
+    int tiltHeight = is_slx ? tiltHeight_slx : tiltHeight_sl1;
 
     int tilt = Ms(0);
     if (p.use_tilt) {
@@ -142,7 +143,8 @@ std::pair<double, bool> calculate_layer_time(const SLATimeEstimateInput& in)
     bool is_fast_layer = false;
 
     if (in.is_prusa_print) {
-        is_fast_layer = int(in.layer_idx) < first_slow_layers || in.layer_area <= in.display_area * in.area_fill;
+        // Enforce slow layers for the first layers. Other layers obey area fill
+        is_fast_layer = int(in.layer_idx) >= first_slow_layers && in.layer_area <= in.display_area * in.area_fill;
         const int l_height_nm = 1000000 * in.layer_height;
 
         const int exposure_delay = in.is_slx ? 0 : (is_fast_layer ? in.below : in.above).delay_after_exposure_ms;
@@ -150,7 +152,7 @@ std::pair<double, bool> calculate_layer_time(const SLATimeEstimateInput& in)
         layer_times = layer_peel_move_time(l_height_nm, is_fast_layer ? in.below : in.above, in.is_slx) +
                             (is_fast_layer ? in.below : in.above).delay_before_exposure_ms +
                             exposure_delay +
-                            124;                                    // Magical constant to compensate remaining computation delay in exposure thread
+                            124;   // Magical constant to compensate remaining computation delay in exposure thread
 
         layer_times *= 0.001; // All before calculations are made in ms, but we need it in s
     }

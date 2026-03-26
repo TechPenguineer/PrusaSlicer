@@ -4889,13 +4889,21 @@ void PrintConfigDef::init_sla_params()
     // Declare retract values for material profile, overriding the print and printer profiles.
     for (const char* opt_key : {
         // float
-        "support_head_front_diameter", "branchingsupport_head_front_diameter", 
-        "support_head_penetration", "branchingsupport_head_penetration", 
+        "support_head_front_diameter", "branchingsupport_head_front_diameter",
+        "support_head_penetration", "branchingsupport_head_penetration",
         "support_head_width", "branchingsupport_head_width",
         "support_pillar_diameter", "branchingsupport_pillar_diameter",
+        "support_critical_angle", "branchingsupport_critical_angle",
+        "support_max_bridge_length", "branchingsupport_max_bridge_length",
+        "support_max_pillar_link_distance", "branchingsupport_max_pillar_link_distance",
         "elefant_foot_compensation", "absolute_correction",
+        "pad_wall_slope",
         // int
-        "support_points_density_relative"
+        "faded_layers",
+        "support_points_density_relative",
+        "support_max_bridges_on_pillar", "branchingsupport_max_bridges_on_pillar",
+        // percent
+        "support_small_pillar_diameter_percent", "branchingsupport_small_pillar_diameter_percent"
         }) {
         auto it_opt = options.find(opt_key);
         assert(it_opt != options.end());
@@ -4908,8 +4916,9 @@ void PrintConfigDef::init_sla_params()
         def->max  = it_opt->second.max;
         def->mode = it_opt->second.mode;
         switch (def->type) {
-        case coFloat: def->set_default_value(new ConfigOptionFloatNullable{ it_opt->second.default_value->getFloat() }); break;
-        case coInt:   def->set_default_value(new ConfigOptionIntNullable{ it_opt->second.default_value->getInt() }); break;
+        case coFloat:   def->set_default_value(new ConfigOptionFloatNullable{ it_opt->second.default_value->getFloat() }); break;
+        case coPercent: def->set_default_value(new ConfigOptionPercentNullable{ it_opt->second.default_value->getFloat() }); break;
+        case coInt:     def->set_default_value(new ConfigOptionIntNullable{ it_opt->second.default_value->getInt() }); break;
         default: assert(false);
         }
     }

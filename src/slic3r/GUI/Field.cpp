@@ -468,7 +468,7 @@ void TextCtrl::BUILD() {
 	case coPercent:
 	{
 		text_value = wxString::Format(_T("%i"), int(m_opt.default_value->getFloat()));
-		text_value += "%";
+        m_last_meaningful_value = text_value;
 		break;
 	}
 	case coPercents:

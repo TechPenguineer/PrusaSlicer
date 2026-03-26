@@ -672,9 +672,22 @@ static std::vector<std::string> s_Preset_sla_material_options{
     "material_ow_branchingsupport_head_width",
     "material_ow_branchingsupport_pillar_diameter",
 
+    "material_ow_support_critical_angle",
+    "material_ow_branchingsupport_critical_angle",
+    "material_ow_support_max_bridge_length",
+    "material_ow_branchingsupport_max_bridge_length",
+    "material_ow_support_max_pillar_link_distance",
+    "material_ow_branchingsupport_max_pillar_link_distance",
+    "material_ow_support_small_pillar_diameter_percent",
+    "material_ow_branchingsupport_small_pillar_diameter_percent",
+    "material_ow_support_max_bridges_on_pillar",
+    "material_ow_branchingsupport_max_bridges_on_pillar",
+
     "material_ow_support_points_density_relative",
+    "material_ow_faded_layers",
     "material_ow_absolute_correction",
-    "material_ow_elefant_foot_compensation"
+    "material_ow_elefant_foot_compensation",
+    "material_ow_pad_wall_slope"
 };
 
 static std::vector<std::string> s_Preset_sla_tilt_options{

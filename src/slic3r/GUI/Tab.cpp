@@ -5891,7 +5891,8 @@ static std::vector<std::string> get_override_opt_kyes_for_line(const std::string
     std::vector<std::string> opt_keys;
     opt_keys.reserve(3);
 
-    if (title == "Support head" || title == "Support pillar") {
+    if (title == "Support head" || title == "Support pillar" ||
+        title == "Connection of the support sticks and junctions") {
         for (auto& prefix : { "", "branching" })
             opt_keys.push_back(preprefix + prefix + key);
     }
@@ -5906,7 +5907,8 @@ static std::vector<std::string> get_override_opt_kyes_for_line(const std::string
 
 void TabSLAMaterial::create_line_with_near_label_widget(ConfigOptionsGroupShp optgroup, const std::string& key)
 {
-    if (optgroup->title == "Support head" || optgroup->title == "Support pillar")
+    if (optgroup->title == "Support head" || optgroup->title == "Support pillar" ||
+        optgroup->title == "Connection of the support sticks and junctions")
         add_options_into_line(optgroup, { {"", L("Default")}, {"branching", L("Branching")} }, key, "material_ow_");
     else {
         const std::string opt_key = (key == "printing_temperature") ? key : std::string("material_ow_") + key;
@@ -5951,13 +5953,26 @@ std::vector<std::pair<std::string, std::vector<std::string>>> material_overrides
     }},
     {"Support pillar", {
         "support_pillar_diameter",
+        "support_small_pillar_diameter_percent",
+        "support_max_bridges_on_pillar",
+    }},
+    {"Connection of the support sticks and junctions", {
+        "support_critical_angle",
+        "support_max_bridge_length",
+        "support_max_pillar_link_distance",
     }},
     {"Automatic generation", {
         "support_points_density_relative"
     }},
+    {"Layers", {
+        "faded_layers"
+    }},
     {"Corrections", {
         "absolute_correction",
         "elefant_foot_compensation"
+    }},
+    {"Pad", {
+        "pad_wall_slope"
     }}
 };
 
@@ -5984,7 +5999,8 @@ void TabSLAMaterial::update_line_with_near_label_widget(ConfigOptionsGroupShp op
     std::vector<std::string> opt_keys;
     opt_keys.reserve(3);
 
-    if (optgroup->title == "Support head" || optgroup->title == "Support pillar") {
+    if (optgroup->title == "Support head" || optgroup->title == "Support pillar" ||
+        optgroup->title == "Connection of the support sticks and junctions") {
         for (auto& prefix : { "", "branching" }) {
             std::string opt_key = preprefix + prefix + key;
             is_checked = !m_config->option(opt_key)->is_nil();

@@ -5698,6 +5698,12 @@ void TabSLAMaterial::toggle_options()
 {
     if (m_active_page->title() == "Material Overrides")
         update_material_overrides_page();
+    if (m_active_page->title() == "Material printing profile") {
+        std::optional<ConfigOptionsGroupShp> optgroup{ get_option_group(m_active_page, "Temperature")};
+        if (optgroup) {
+            update_line_with_near_label_widget(*optgroup, "printing_temperature");
+        }
+    }
     toggle_tilt_options(true);
     toggle_tilt_options(false);
 }
@@ -6015,7 +6021,7 @@ void TabSLAMaterial::update_line_with_near_label_widget(ConfigOptionsGroupShp op
         }
     }
     else {
-        std::string opt_key = preprefix + key;
+        std::string opt_key = (key == "printing_temperature") ? key : preprefix + key;
         is_checked = !m_config->option(opt_key)->is_nil();
         opt_keys.push_back(opt_key);
     }

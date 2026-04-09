@@ -883,7 +883,10 @@ void Sidebar::init_workflow_combo(int margin_5)
 
 void Sidebar::on_workflow_changed()
 {
-    m_plater->model().sla_workflow_uuid = m_available_workflows[m_workflow->GetSelection()].uuid;
+    if (!m_workflow->IsEmpty() && !m_available_workflows.empty()) {
+        assert(m_workflow->GetCount() == m_available_workflows.size());
+        m_plater->model().sla_workflow_uuid = m_available_workflows[m_workflow->GetSelection()].uuid;
+    }
 }
 
 void Sidebar::msw_rescale()

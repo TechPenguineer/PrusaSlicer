@@ -1,0 +1,1460 @@
+{
+  "version": "1.0.2",
+  "materials": {
+    "036d3214-f980-4be9-8d36-2c761540569d": {
+      "name": "Flame Retardant HDT",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "045c6f71-e679-4021-a074-3df5ce5d393e": {
+      "name": "Resin Model Alabaster White",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00",
+        "ef5124b8-3e77-40a7-9d8e-831fd9b823ab"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "0af33df4-541d-4e0a-a00d-23d495c8095e": {
+      "name": "Resin Impact65 Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "0b20c86a-e0ec-4185-a94e-aa928c437dcb": {
+      "name": "Resin Flex80 Transparent Clear",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "0b39ab13-1c64-47e8-8478-305a1a188b26": {
+      "name": "Ultracur3D® FL 300",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "14aa5838-c1e7-4306-ac2a-5ef1280c0a44": {
+      "name": "Resin Model Transparent Clear",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "8114bbd4-23f6-44a1-903e-8b1f20db7c97"
+      ],
+      "default_workflow": "8114bbd4-23f6-44a1-903e-8b1f20db7c97"
+    },
+    "1c7d9cb4-90be-47aa-81b0-877ca0ca46ed": {
+      "name": " LOCTITE 3D MED3394  BK",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "218c5307-657e-4123-b03d-6867f57f18ab": {
+      "name": "Resin Flex80 White",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "2440e273-ee5a-4ccc-9222-62c538514a48": {
+      "name": " LOCTITE 3D IND147 ",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "25a3d87a-f71f-4690-a3eb-b00a2dec72da": {
+      "name": "Ultracur3D® RG 3280",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "2d5a4147-f5dd-4e19-a275-9445126f1183": {
+      "name": "Cubic Ink® Rigid 2000 VP Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "f9e0e423-61ea-4840-9b0b-3752c2f56a1f",
+        "name": "Altana"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "2d5c7d74-5801-49cb-8dad-b603e63e3f4d": {
+      "name": "Resin Model Solid Grey",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "2d72a980-fb1e-4d28-8f2d-436a33d5c0b5": {
+      "name": "Resin Model Classic Red",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "2f1cf85c-229e-4116-ba95-d308036dd508": {
+      "name": "Resin Flex Anatomic Red",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "2fbaac55-3757-4ec8-bd57-944bdaf6baaf": {
+      "name": "Resin Model Terra Brown",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "3410a5aa-0eef-44da-9a41-e087edbdc037": {
+      "name": "Ultracur3D® EL 4000",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "3531b708-1cea-4443-8856-5678d08e347b": {
+      "name": "Resin Model Rich Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "35ecc9b6-217d-4b0c-9eef-99c7f73fac08": {
+      "name": "Ultracur3D® ST 45",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "38100bc4-ebdc-4e4d-861b-90ffbb09874d": {
+      "name": "Ultracur3D® DM 2505",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "39f19851-360c-4e26-b72f-31a0e3ef8636": {
+      "name": " LOCTITE 3D IND6845 ",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "3a3f0193-26f9-4975-b50b-7ac29c98fd3a": {
+      "name": "LOCTITE 3D IND6845",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [
+        "0b2014eb-a6b4-4ad6-8eb7-c0da8dae3c6c"
+      ],
+      "default_workflow": "0b2014eb-a6b4-4ad6-8eb7-c0da8dae3c6c"
+    },
+    "40cb829e-0e3c-46c5-8c69-f9a4978aeef2": {
+      "name": "Ultracur3D® ST 45 M",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "411e3251-d683-43ec-a457-ae73a402e6be": {
+      "name": " LOCTITE 3D IND249 ",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "424ef39e-a5fa-42e9-8b7d-549d3c558f7a": {
+      "name": "Resin Model Transparent Red",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "47915ac2-a02c-4bd8-a4d6-fc9d6b1dedfa": {
+      "name": "Premium Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "4a5625fe-4d37-425e-90ca-d791b0fbe7d3": {
+      "name": "Resin Model Transparent Green",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "4dfa2d58-ac20-46c2-b101-0ad941931305": {
+      "name": "Resin Model Neutral Beige",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "4ef0f5cf-1118-438e-8440-d40a97b33f12": {
+      "name": "Resin Model Bright Magenta",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "5058548e-dc68-49ed-953f-2a6da86e61fb": {
+      "name": "Ultracur3D® RG 35 B",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "59780244-ade8-4f19-9f27-b3e41d4a8bb1": {
+      "name": "Resin BioBased60 Ivory White",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "651f59aa-71dc-49d2-a35e-49dec503d369": {
+      "name": "Cubic Ink® High Temperature 1901 VP",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "f9e0e423-61ea-4840-9b0b-3752c2f56a1f",
+        "name": "Altana"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "66b7aa25-2396-420d-a462-a4dc562ea18a": {
+      "name": "ESD",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "6c14482f-9bde-4663-9f17-7a86950328cb": {
+      "name": "Ultracur3D® RG 1100",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "7156f992-eb27-4f0d-a4d3-e86e17a9bf63": {
+      "name": "Ultracur3D® ST 7500 G",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "7bc0de12-e0ae-455f-a7be-74ba6e10f108": {
+      "name": "Resin Model Bright Cyan",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "7c0f7853-9861-4870-be14-f6a0bc9180da": {
+      "name": "Resin Flex Gingiva Mask",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "7f935126-2432-488c-94ac-8d4ef1406b00": {
+      "name": "Cubic® Ink Mold 2200 VP",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "f9e0e423-61ea-4840-9b0b-3752c2f56a1f",
+        "name": "Altana"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "801db3fb-3ce9-4dbe-99cf-c7cc141b6a45": {
+      "name": "Ultracur3D® RG 35",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "80910458-6f80-4dad-8e45-d1928d0a0fe2": {
+      "name": "Cubic Ink® High Performance 4-4800 VP Light Green",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "f9e0e423-61ea-4840-9b0b-3752c2f56a1f",
+        "name": "Altana"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "81acfcf8-3536-4320-a372-a489f24bb3d9": {
+      "name": "Tough-X",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "82c3fd75-c6bd-464e-b562-ddbe0cc2666c": {
+      "name": "Premium White",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "8be4eb7b-8234-4ac0-bc70-f823067c4cea": {
+      "name": " LOCTITE 3D MED3394 WH",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "8f68f83b-a821-48e9-821e-cbf078ed902b": {
+      "name": " LOCTITE 3D PRO476 ",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "96418194-e0c6-49b4-92ff-249190677194": {
+      "name": "Resin BioBased60 Obsidian Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "994f1b44-d0e2-49f4-b1b7-473afe347878": {
+      "name": " LOCTITE 3D IND5714 ",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "997260af-a03f-4bae-a040-226f1d0a7870": {
+      "name": "Composite-X",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "9e2956c2-91a5-45c3-be4b-d2e0e3c281bf": {
+      "name": "Elastomer-X",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a119275f-65e5-4636-b4d5-76febde3dc6c": {
+      "name": "Resin Model Grass Green",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a438b968-c69f-4140-9b5d-fddd659738b0": {
+      "name": "LOCTITE 3D IND402",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a6d00480-9ad3-4b2b-98cd-9c67d1de33cd": {
+      "name": "Ultracur3D® ST 45 B",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a7125225-467e-4e24-9abf-2870defa7bae": {
+      "name": "Wax Castable",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a73eae2a-0c1e-4f7f-b40f-f766cfc55134": {
+      "name": "Ultracur3D® DM 4505 N",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a7d7f267-58d0-4325-8e9e-f32c4c114e05": {
+      "name": "Clear Impact",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "a915c7a9-4bf7-4fc1-84b6-9336594ea537": {
+      "name": "Resin Model Brick Red",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "b6f44c84-1c42-414e-833f-33e5325ef5b0": {
+      "name": "Resin Model Transparent Amber",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "b8433914-7c21-4757-aa18-3cd3713e54aa": {
+      "name": "Resin Model Prusa Orange",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "b9d41d3e-5635-4ec8-80c4-3f882d1fd8ee": {
+      "name": "Rigid Pro",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "bf7f1a5a-51e0-42f0-85a5-8fcab39110f7": {
+      "name": "Cubic Ink® Rigid 1600 VP Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "f9e0e423-61ea-4840-9b0b-3752c2f56a1f",
+        "name": "Altana"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "c1437277-46f9-4179-a5b3-ba702339c8ea": {
+      "name": "Resin BioBased60 Sapphire Blue",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "cb55dd53-fd5a-4878-9c94-00034b418c84": {
+      "name": "Resin Model Ultra Violet",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "cf80aa9d-f079-465e-8a3f-1b1040eb6af1": {
+      "name": "Cubic Ink® Tough 2100 VP Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "f9e0e423-61ea-4840-9b0b-3752c2f56a1f",
+        "name": "Altana"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "d6c966b9-cacc-4b1e-8177-9f539a811ca8": {
+      "name": "Ultracur3D® RG 9400 B FR",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "db704831-6aa5-469f-a235-1e0d62d63e5a": {
+      "name": "Resin Model Anthracite Grey",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "dc80cc8c-5b4e-47c6-904b-39528ccae22d": {
+      "name": "Resin Model Bright Yellow",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "dd2671f1-e69c-42a5-9197-43538685f4ac": {
+      "name": "Resin Flex80 Black",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [
+        "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+      ],
+      "default_workflow": "6740e16e-2ec2-4d86-8bb7-b8c15036df00"
+    },
+    "e508ff01-bca0-4ee1-979e-2a92e3864a96": {
+      "name": "Ultracur3D® EL 60",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "e746dc19-892e-4d31-ae6b-35ce6e3609f9": {
+      "name": "LOCTITE 3D 3843",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [
+        "797a278c-b78f-4ced-94d1-25faa33e2231"
+      ],
+      "default_workflow": "797a278c-b78f-4ced-94d1-25faa33e2231"
+    },
+    "eaec93d2-6031-4b23-8593-b84aeb2d7fb0": {
+      "name": "LOCTITE 3D IND475",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "5927d694-01b2-4262-b272-970764723090",
+        "name": "Henkel"
+      },
+      "slx_workflows": [null],
+      "default_workflow": null
+    },
+    "f3ccb4f3-5b9a-4d25-aefb-8312545e373a": {
+      "name": "Resin Model Sandstone",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580",
+        "name": "Prusament"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "fc0bb222-2dab-4703-8734-9455805765e2": {
+      "name": "Strong-X",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "2a9dda1d-d445-4655-834a-df68be28c352",
+        "name": "Liqcreate"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    },
+    "fdf84074-67a2-40a8-9c44-2c08baaa76ae": {
+      "name": "Ultracur3D® RG 1100 B",
+      "primary_color": null,
+      "properties": {
+        "density": null,
+        "viscosity_18c": null,
+        "viscosity_25c": null,
+        "viscosity_40c": null,
+        "viscosity_60c": null
+      },
+      "brand": {
+        "uuid": "99b03308-ada3-4201-b491-14e9b9f5bf66",
+        "name": "Forward AM"
+      },
+      "slx_workflows": [],
+      "default_workflow": null
+    }
+  },
+  "workflows": {
+    "0b2014eb-a6b4-4ad6-8eb7-c0da8dae3c6c": {
+      "name": "Loctite 3D Cleaner C",
+      "wash_profiles": {
+        "40a36564-9432-40d8-8882-1e390cf69e2f": {
+          "wash_cycles": [
+            {
+              "medium": {
+
+              },
+              "duration": 120,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            },
+            {
+              "medium": {
+
+              },
+              "duration": 240,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            }
+          ]
+        }
+      },
+      "cure_profiles": {
+        "33ee5f9b-7b89-43f0-b371-e1f2e85c5ffb": {
+          "drying_duration": 240,
+          "drying_temperature": 40,
+          "uv_curing_duration": 600,
+          "uv_curing_temperature": 40,
+          "uv_curing_power": 100,
+          "heat_curing_duration": null,
+          "heat_curing_temperature": null,
+          "temperature_ramp": null,
+          "max_idle_temperature": null
+        }
+      }
+    },
+    "6740e16e-2ec2-4d86-8bb7-b8c15036df00": {
+      "name": "3D Basics DPM",
+      "wash_profiles": {
+        "3664c8b4-c125-495c-b9d1-3c2b4d37d558": {
+          "wash_cycles": [
+            {
+              "medium": {
+
+              },
+              "duration": 600,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            },
+            {
+              "medium": {
+
+              },
+              "duration": 300,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            }
+          ]
+        }
+      },
+      "cure_profiles": {
+        "ea2080ab-32b6-47d0-991e-7a4cc2351c72": {
+          "drying_duration": 300,
+          "drying_temperature": 30,
+          "uv_curing_duration": 120,
+          "uv_curing_temperature": 30,
+          "uv_curing_power": 100,
+          "heat_curing_duration": null,
+          "heat_curing_temperature": null,
+          "temperature_ramp": null,
+          "max_idle_temperature": null
+        }
+      }
+    },
+    "797a278c-b78f-4ced-94d1-25faa33e2231": {
+      "name": "Loctite 3D Cleaner C",
+      "wash_profiles": {
+        "5c262439-a1c3-41e2-86f4-1b0661347f5d": {
+          "wash_cycles": [
+            {
+              "medium": {
+
+              },
+              "duration": 120,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            },
+            {
+              "medium": {
+
+              },
+              "duration": 240,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            }
+          ]
+        }
+      },
+      "cure_profiles": {
+        "591d87cc-e9a4-44c6-8cfd-0bea8ebfe9ed": {
+          "drying_duration": 240,
+          "drying_temperature": 50,
+          "uv_curing_duration": 400,
+          "uv_curing_temperature": 50,
+          "uv_curing_power": 100,
+          "heat_curing_duration": null,
+          "heat_curing_temperature": null,
+          "temperature_ramp": null,
+          "max_idle_temperature": null
+        }
+      }
+    },
+    "8114bbd4-23f6-44a1-903e-8b1f20db7c97": {
+      "name": "3D Basics DPM",
+      "wash_profiles": {
+        "b09b1c29-ca97-42fe-891c-9c4215c4912e": {
+          "wash_cycles": [
+            {
+              "medium": {
+
+              },
+              "duration": 600,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            },
+            {
+              "medium": {
+
+              },
+              "duration": 300,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            }
+          ]
+        }
+      },
+      "cure_profiles": {
+        "a738c4f5-cc5d-45d5-9410-0e9240829687": {
+          "drying_duration": 300,
+          "drying_temperature": 30,
+          "uv_curing_duration": 30,
+          "uv_curing_temperature": 30,
+          "uv_curing_power": 100,
+          "heat_curing_duration": null,
+          "heat_curing_temperature": null,
+          "temperature_ramp": null,
+          "max_idle_temperature": null
+        }
+      }
+    },
+    "ef5124b8-3e77-40a7-9d8e-831fd9b823ab": {
+      "name": "Loctite 3D Cleaner C",
+      "wash_profiles": {
+        "0f13f568-6895-45a0-ae2c-9e27b9e6a5ab": {
+          "wash_cycles": [
+            {
+              "medium": {
+
+              },
+              "duration": 600,
+              "speed": 100,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            },
+            {
+              "medium": {
+
+              },
+              "duration": 300,
+              "requires_manual_wash": false,
+              "requires_manual_air_blasting": false
+            }
+          ]
+        }
+      },
+      "cure_profiles": {
+        "2377d3e6-abc9-4254-878a-69fb66253ef4": {
+          "drying_duration": 300,
+          "drying_temperature": 35,
+          "uv_curing_duration": 60,
+          "uv_curing_temperature": 35,
+          "uv_curing_power": 100,
+          "heat_curing_duration": null,
+          "heat_curing_temperature": null,
+          "temperature_ramp": null,
+          "max_idle_temperature": null
+        }
+      }
+    }
+  },
+  "wash_media": {
+    "4c47e887-013c-4f4a-8857-88f06fe8183f": {
+      "brand": {
+        "uuid": "1eb29f9a-dd92-4efe-82ed-3b756eb0432f"
+      },
+      "name": "3D Basics DPM Wash Solvent",
+      "density": 10,
+      "wash_capacity": 1000
+    },
+    "78c9e93b-94dc-4c63-af42-4bce6304142f": {
+      "brand": {
+        "uuid": "6da76d11-4e01-400c-b6b3-9cc73fa1d580"
+      },
+      "name": "Water",
+      "density": 1000,
+      "wash_capacity": 1000
+    }
+  },
+  "sla_wash_medium_containers": {
+    "20457c12-f923-4d30-a904-7973356137dc": {
+      "capacity": "1000"
+    }
+  },
+  "sla_material_containers": {
+
+  }
+}

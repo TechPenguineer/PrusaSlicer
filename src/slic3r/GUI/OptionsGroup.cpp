@@ -20,6 +20,7 @@
 #include <wx/bookctrl.h> // IWYU pragma: keep
 #include <wx/numformatter.h>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include "slic3r/GUI/Search.hpp" // IWYU pragma: keep
 #include "slic3r/GUI/Field.hpp"
@@ -276,9 +277,14 @@ Option::Option(const ConfigOptionDef& _opt, t_config_option_key id) : opt(_opt),
         if (opt.opt_key.rfind("branching", 0) == 0)
             tooltip = _L("Unavailable for this method.") + "\n";
         tooltip += _(opt.tooltip);
-        if (opt.opt_key.rfind("custom_parameters_", 0) == 0) {
+        if (boost::starts_with(opt.opt_key, "custom_parameters_")) {
             //"custom_parameters_*" contains just a template tooltip which has to be formated after localization
-            tooltip = format_wxstr(tooltip, opt.opt_key);
+            // Note that the tooltip should use singular form (parameters -> parameter), because that is how the parameters
+            // are addressed (https://github.com/prusa3d/PrusaSlicer/issues/15033). This is fragile, but it might do.
+            if (tooltip.find("%1%") == wxString::npos)
+                std::terminate(); // this is a programmer error, the tooltip should contain "%1%" placeholder for parameter name
+            const std::string param_prefix = boost::replace_first_copy(opt.opt_key, "custom_parameters_", "custom_parameter_");
+            tooltip = format_wxstr(tooltip, param_prefix);
         }
 
         // edit tooltip : change Slic3r to SLIC3R_APP_KEY
